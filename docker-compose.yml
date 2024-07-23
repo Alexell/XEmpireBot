@@ -1,0 +1,14 @@
+version: '3'
+services:
+    bot:
+        container_name: 'MuskEmpireBot'
+        stop_signal: SIGINT
+        build:
+            context: .
+        working_dir: /app
+        volumes:
+            - .:/app
+        entrypoint: "python3 main.py"
+        command: ["-a", "2"]
+        restart: unless-stopped
+        env_file: .env
