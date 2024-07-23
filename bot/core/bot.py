@@ -161,6 +161,20 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Daily reward error: {str(error)}")
 			return False
 	
+	async def friend_reward(self, friend: int) -> bool:
+		url = self.api_url + '/friends/claim'
+		try:
+			json_data = {'data': friend}
+			response = await self.http_client.post(url, json=json_data)
+			response.raise_for_status()
+			response_json = await response.json()
+			success = response_json.get('success', False)
+			if success: return True
+			else: return False
+		except Exception as error:
+			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
+			return False
+	
 	async def perform_taps(self, per_tap: int, energy: int) -> None:
 		url = self.api_url + '/hero/action/tap'
 		log.info(f"{self.session_name} | Taps started")
@@ -252,6 +266,13 @@ class CryptoBot:
 						for quest in unrewarded_quests:
 							if await self.quest_reward(quest=quest):
 								log.success(f"{self.session_name} | Reward for quest {quest} claimed")
+					
+					unrewarded_friends = [int(friend['id']) for friend in full_profile['data']['friends'] if friend['bonusToTake'] > 0]
+					if unrewarded_friends:
+						log.info(f"{self.session_name} | Reward for friends available")
+						for friend in unrewarded_friends:
+							if await self.friend_reward(friend=friend):
+								log.success(f"{self.session_name} | Reward for friend {friend} claimed")
 					
 					per_tap = profile['data']['hero']['earns']['task']['moneyPerTap']
 					max_energy = profile['data']['hero']['earns']['task']['limit']
