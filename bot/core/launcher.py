@@ -72,7 +72,7 @@ async def run_clients(tg_clients: list[Client]):
 
 async def start() -> None:
 	if not config:
-		log.warning(f"API_ID and API_HASH must be set in the .env file.")
+		log.warning(f"Please fix the above errors in the .env file")
 		return
 	parser = ArgumentParser()
 	parser.add_argument('-a', '--action', type=int, choices=[1, 2], help='Action to perform  (1 or 2)')

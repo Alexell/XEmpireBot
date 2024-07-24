@@ -14,9 +14,8 @@
 | Claim reward for completed quests                              |     ✅     |
 | Claim offline bonus                                            |     ✅     |
 | Automatic taps                                                 |     ✅     |
+| PvP negotiations                                               |     ✅     |
 | Docker                                                         |     ✅     |
-
-**In Development:** PvP negotiations
 
 ## [Options](https://github.com/Alexell/MuskEmpireBot/blob/main/.env-example)
 | Option                  | Description                                                                |
@@ -24,10 +23,16 @@
 | **API_ID / API_HASH**   | Platform data for launching a Telegram session (default: Android)          |
 | **TAPS_ENABLED**        | Taps enabled (True / False)                                                |
 | **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                   |
+| **PVP_ENABLED**         | PvP negotiations enabled (True / False)                                    |
+| **PVP_LEAGUE**          | League in negotiations (e.g. bronze)                                       |
+| **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                     |
+| **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                 |
 | **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                |
 | **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)            |
 
 You can obtain the **API_ID** and **API_HASH** after creating an application at [my.telegram.org/apps](https://my.telegram.org/apps)
+
+**PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle (the bot performs all actions, then sleeps for an hour, which is the recurring cycle).
 
 ## Quick start
 ### Windows
