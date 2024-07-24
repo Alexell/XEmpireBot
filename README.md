@@ -22,6 +22,7 @@
 | Option                  | Description                                                                |
 |-------------------------|----------------------------------------------------------------------------|
 | **API_ID / API_HASH**   | Platform data for launching a Telegram session (default: Android)          |
+| **TAPS_ENABLED**        | Taps enabled (True / False)                                                |
 | **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                   |
 | **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                |
 | **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)            |

@@ -274,11 +274,12 @@ class CryptoBot:
 							if await self.friend_reward(friend=friend):
 								log.success(f"{self.session_name} | Reward for friend {friend} claimed")
 					
-					per_tap = profile['data']['hero']['earns']['task']['moneyPerTap']
-					max_energy = profile['data']['hero']['earns']['task']['limit']
-					energy = profile['data']['hero']['earns']['task']['energy']
-					if energy == max_energy:
-						await self.perform_taps(per_tap=per_tap, energy=energy)
+					if config.TAPS_ENABLED:
+						per_tap = profile['data']['hero']['earns']['task']['moneyPerTap']
+						max_energy = profile['data']['hero']['earns']['task']['limit']
+						energy = profile['data']['hero']['earns']['task']['energy']
+						if energy == max_energy:
+							await self.perform_taps(per_tap=per_tap, energy=energy)
 
 					profile = await self.get_profile(full=False)
 					log.info(f"{self.session_name} | Level: {profile['data']['hero']['level']} | "

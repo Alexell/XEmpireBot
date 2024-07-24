@@ -16,6 +16,7 @@ class Settings(BaseSettings):
 	API_ID: int
 	API_HASH: str
 	
+	TAPS_ENABLED: bool = True
 	TAPS_PER_SECOND: list[int] = [20, 30] # tested with 4 fingers
 	ERRORS_BEFORE_STOP: int = 3
 	USE_PROXY_FROM_FILE: bool = False
