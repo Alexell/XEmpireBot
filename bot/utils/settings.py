@@ -22,7 +22,8 @@ class Settings(BaseSettings):
 	PVP_LEAGUE: str = 'bronze'
 	PVP_STRATEGY: str = 'random'
 	PVP_COUNT: int = 10
-	
+
+	SLEEP_BETWEEN_START: list[int] = [20, 360]
 	ERRORS_BEFORE_STOP: int = 3
 	USE_PROXY_FROM_FILE: bool = False
 

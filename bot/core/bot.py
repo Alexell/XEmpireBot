@@ -438,6 +438,9 @@ class CryptoBot:
 
 async def run_bot(tg_client: Client, proxy: str | None):
 	try:
+		sleep_between_start_sessions = random.randint(a=config.SLEEP_BETWEEN_START[0], b=config.SLEEP_BETWEEN_START[1])
+		log.info(f"{tg_client.name} | Wait {sleep_between_start_sessions} sec before start")
+		await asyncio.sleep(delay=sleep_between_start_sessions)
 		await CryptoBot(tg_client=tg_client).run(proxy=proxy)
 	except RuntimeError as error:
 		log.error(f"{tg_client.name} | Session error: {str(error)}")
