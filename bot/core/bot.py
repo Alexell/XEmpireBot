@@ -165,7 +165,40 @@ class CryptoBot:
 				return True
 			else: return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Daily reward error: {str(error)}")
+			log.error(f"{self.session_name} | Quest reward error: {str(error)}")
+			return False
+	
+	async def daily_quest_reward(self, quest: str) -> bool:
+		url = self.api_url + '/quests/daily/progress/claim'
+		try:
+			json_data = {'data': {'quest': quest, 'code': None}}
+			response = await self.http_client.post(url, json=json_data)
+			response.raise_for_status()
+			response_json = await response.json()
+			success = response_json.get('success', False)
+			if success:
+				self.balance = int(response_json['data']['hero']['money'])
+				return True
+			else: return False
+		except Exception as error:
+			log.error(f"{self.session_name} | Daily quest reward error: {str(error)}")
+			return False
+	
+	async def daily_quests(self) -> None:
+		url = self.api_url + '/quests/daily/progress/all'
+		try:
+			response = await self.http_client.post(url, json={})
+			response.raise_for_status()
+			response_json = await response.json()
+			success = response_json.get('success', False)
+			if success:
+				for name, quest in response_json['data'].items():
+					if 'youtube' in name: continue
+					if quest['isComplete'] == True and quest['isRewarded'] == False:
+						if await self.daily_quest_reward(name):
+							log.success(f"{self.session_name} | Reward for daily quest {name} claimed")
+		except Exception as error:
+			log.error(f"{self.session_name} | Daily quests error: {str(error)}")
 			return False
 	
 	async def friend_reward(self, friend: int) -> bool:
@@ -345,6 +378,8 @@ class CryptoBot:
 						for quest in unrewarded_quests:
 							if await self.quest_reward(quest=quest):
 								log.success(f"{self.session_name} | Reward for quest {quest} claimed")
+					
+					await self.daily_quests()
 					
 					unrewarded_friends = [int(friend['id']) for friend in full_profile['data']['friends'] if friend['bonusToTake'] > 0]
 					if unrewarded_friends:
