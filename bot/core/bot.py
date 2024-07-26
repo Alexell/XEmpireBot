@@ -1,5 +1,7 @@
 import asyncio, aiohttp, random, math
 from time import time
+from zoneinfo import ZoneInfo
+from datetime import datetime
 from urllib.parse import unquote
 from typing import Any, Dict
 from aiohttp_proxy import ProxyConnector
@@ -18,6 +20,7 @@ class CryptoBot:
 		self.tg_client = tg_client
 		self.user_id = None
 		self.api_url = 'https://api.muskempire.io'
+		self.need_quiz = False
 		self.errors = 0
 
 	async def get_tg_web_data(self, proxy: str | None) -> Dict[str, Any]:
@@ -171,10 +174,10 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Quest reward error: {str(error)}")
 			return False
 	
-	async def daily_quest_reward(self, quest: str) -> bool:
+	async def daily_quest_reward(self, quest: str, code:str = None) -> bool:
 		url = self.api_url + '/quests/daily/progress/claim'
 		try:
-			json_data = {'data': {'quest': quest, 'code': None}}
+			json_data = {'data': {'quest': quest, 'code': code}}
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
 			response_json = await response.json()
@@ -198,8 +201,11 @@ class CryptoBot:
 			if success:
 				for name, quest in response_json['data'].items():
 					if 'youtube' in name: continue
+					if 'quiz' in name:
+						if quest['isRewarded'] == False: self.need_quiz = True
+						continue
 					if quest['isComplete'] == True and quest['isRewarded'] == False:
-						if await self.daily_quest_reward(name):
+						if await self.daily_quest_reward(quest=name):
 							log.success(f"{self.session_name} | Reward for daily quest {name} claimed")
 		except Exception as error:
 			log.error(f"{self.session_name} | Daily quests error: {str(error)}")
@@ -317,6 +323,51 @@ class CryptoBot:
 		money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
+	async def get_helper(self) -> Dict[str, Any]:
+		url = 'https://alexell.ru/crypto/musk-empire/data.json'
+		response = await self.http_client.get(url)
+		if response.status == 200:
+			response_json = await response.json()
+			return response_json
+		else: return {}
+
+	async def get_funds_info(self) -> Dict[str, Any]:
+		url = self.api_url + '/fund/info'
+		try:
+			response = await self.http_client.post(url, json={})
+			response.raise_for_status()
+			response_json = await response.json()
+			return response_json['data']
+		except Exception as error:
+			self.errors += 1
+			log.error(f"{self.session_name} | Funds error: {error}")
+			await asyncio.sleep(delay=3)
+			return {}
+
+	async def invest(self, fund: str, amount: int) -> None:
+		url = self.api_url + '/fund/invest'
+		if self.balance < amount:
+			log.info(f"{self.session_name} | Not enough money for invest")
+			return
+		try:
+			json_data = {'data': {'fund': fund, 'money': amount}}
+			response = await self.http_client.post(url, json=json_data)
+			response.raise_for_status()
+			response_json = await response.json()
+			success = response_json.get('success', False)
+			if success:
+				self.errors = 0
+				self.balance = int(response_json['data']['hero']['money'])
+				for fnd in response_json['data']['funds']:
+					if fnd['fundKey'] == fund:
+						money = fnd['moneyProfit']
+						money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+						log.success(f"{self.session_name} | Invest completed. {money_str}")
+						break
+		except Exception as error:
+			self.errors += 1
+			log.error(f"{self.session_name} | Invest error: {str(error)}")
+
 	async def check_proxy(self, proxy: Proxy) -> None:
 		try:
 			response = await self.http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
@@ -334,6 +385,7 @@ class CryptoBot:
 				await self.check_proxy(proxy=proxy)
 
 			self.authorized = False
+			gmt_timezone = ZoneInfo('GMT')
 			while True:
 				if self.errors >= config.ERRORS_BEFORE_STOP:
 					log.error(f"{self.session_name} | Bot stopped (too many errors)")
@@ -425,7 +477,24 @@ class CryptoBot:
 								log.warning(f"{self.session_name} | PVP_LEAGUE param is invalid. PvP negotiations disabled.")
 						else:
 							log.warning(f"{self.session_name} | Database is missing. PvP negotiations will be skipped this time.")
-						
+					
+					# Daily quiz and combo invest with external data
+					helper = await self.get_helper()
+					cur_time_gmt = datetime.now(gmt_timezone)
+					cur_time_gmt_s = cur_time_gmt.strftime('%Y-%m-%d')
+					new_day_gmt = cur_time_gmt.replace(hour=7, minute=0, second=0, microsecond=0)
+					if cur_time_gmt >= new_day_gmt and cur_time_gmt_s in helper:
+						helper = helper[cur_time_gmt_s]
+						if 'quiz' in helper and self.need_quiz:
+							if await self.daily_quest_reward(quest='quiz', code=helper['quiz']):
+								self.need_quiz = False
+								log.success(f"{self.session_name} | Reward for daily quiz claimed")
+						if 'funds' in helper:
+							current_invest = await self.get_funds_info()
+							if 'funds' in current_invest and not current_invest['funds'] and config.INVEST_AMOUNT > 0:
+								for fund in helper['funds']:
+									await self.invest(fund=fund, amount=config.INVEST_AMOUNT)
+					
 					profile = await self.get_profile(full=False)
 					self.balance = int(profile['data']['hero']['money'])
 					log.info(f"{self.session_name} | Level: {profile['data']['hero']['level']} | "

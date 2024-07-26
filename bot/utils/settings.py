@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 	PVP_LEAGUE: str = 'bronze'
 	PVP_STRATEGY: str = 'random'
 	PVP_COUNT: int = 10
+	INVEST_AMOUNT: int = 0
 
 	SLEEP_BETWEEN_START: list[int] = [20, 360]
 	ERRORS_BEFORE_STOP: int = 3
