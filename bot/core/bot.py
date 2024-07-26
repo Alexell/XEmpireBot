@@ -127,6 +127,7 @@ class CryptoBot:
 			response_json = await response.json()
 			success = response_json.get('success', False)
 			if success:
+				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
 				return True
 			else: return False
@@ -145,6 +146,7 @@ class CryptoBot:
 			response_json = await response.json()
 			success = response_json.get('success', False)
 			if success:
+				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
 				return True
 			else: return False
@@ -161,6 +163,7 @@ class CryptoBot:
 			response_json = await response.json()
 			success = response_json.get('success', False)
 			if success:
+				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
 				return True
 			else: return False
@@ -177,6 +180,7 @@ class CryptoBot:
 			response_json = await response.json()
 			success = response_json.get('success', False)
 			if success:
+				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
 				return True
 			else: return False
@@ -210,6 +214,7 @@ class CryptoBot:
 			response_json = await response.json()
 			success = response_json.get('success', False)
 			if success:
+				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
 				return True
 			else: return False
@@ -237,6 +242,7 @@ class CryptoBot:
 				response_json = await response.json()
 				success = response_json.get('success', False)
 				if success:
+					self.errors = 0
 					self.balance = int(response_json['data']['hero']['money'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
 					log.success(f"{self.session_name} | Earned money: +{earned_money} | Energy left: {energy}")
