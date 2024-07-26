@@ -307,7 +307,7 @@ class CryptoBot:
 			except Exception as error:
 				log.error(f"{self.session_name} | PvP error: {str(error)}")
 				self.errors += 1
-				break
+				await asyncio.sleep(random.randint(5, 10))
 		money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
