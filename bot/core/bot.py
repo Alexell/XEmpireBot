@@ -21,6 +21,8 @@ class CryptoBot:
 		self.user_id = None
 		self.api_url = 'https://api.muskempire.io'
 		self.need_quiz = False
+		self.need_rebus = False
+		self.rebus_key = ''
 		self.errors = 0
 
 	async def get_tg_web_data(self, proxy: str | None) -> Dict[str, Any]:
@@ -157,10 +159,10 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Daily reward error: {str(error)}")
 			return False
 			
-	async def quest_reward(self, quest: str) -> bool:
+	async def quest_reward(self, quest: str, code:str = None) -> bool:
 		url = self.api_url + '/quests/claim'
 		try:
-			json_data = {'data': [quest, None]}
+			json_data = {'data': [quest, code]}
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
 			response_json = await response.json()
@@ -209,6 +211,22 @@ class CryptoBot:
 							log.success(f"{self.session_name} | Reward for daily quest {name} claimed")
 		except Exception as error:
 			log.error(f"{self.session_name} | Daily quests error: {str(error)}")
+			return False
+	
+	async def solve_rebus(self, quest: str, code:str) -> bool:
+		url = self.api_url + '/quests/check'
+		try:
+			json_data = {'data': [quest, code]}
+			response = await self.http_client.post(url, json=json_data)
+			response.raise_for_status()
+			response_json = await response.json()
+			if response_json.get('success', False) and response_json['data'].get('result', False):
+				await asyncio.sleep(delay=2)
+				if await self.quest_reward(quest=quest, code=code):
+					return True
+			return False
+		except Exception as error:
+			log.error(f"{self.session_name} | Rebus error: {str(error)}")
 			return False
 	
 	async def friend_reward(self, friend: int) -> bool:
@@ -434,6 +452,10 @@ class CryptoBot:
 					if unrewarded_quests:
 						log.info(f"{self.session_name} | Quest rewards available")
 						for quest in unrewarded_quests:
+							if 'rebus' in quest:
+								self.rebus_key = quest
+								self.need_rebus = True
+								continue
 							if await self.quest_reward(quest=quest):
 								log.success(f"{self.session_name} | Reward for quest {quest} claimed")
 					
@@ -478,7 +500,7 @@ class CryptoBot:
 						else:
 							log.warning(f"{self.session_name} | Database is missing. PvP negotiations will be skipped this time.")
 					
-					# Daily quiz and combo invest with external data
+					# Daily quiz, rebus and combo invest with external data
 					helper = await self.get_helper()
 					cur_time_gmt = datetime.now(gmt_timezone)
 					cur_time_gmt_s = cur_time_gmt.strftime('%Y-%m-%d')
@@ -489,6 +511,10 @@ class CryptoBot:
 							if await self.daily_quest_reward(quest='quiz', code=helper['quiz']):
 								self.need_quiz = False
 								log.success(f"{self.session_name} | Reward for daily quiz claimed")
+						if 'rebus' in helper and self.need_rebus:
+							if await self.solve_rebus(quest=self.rebus_key, code=helper['rebus']):
+								self.need_rebus = False
+								log.success(f"{self.session_name} | Reward for daily rebus claimed")
 						if 'funds' in helper:
 							current_invest = await self.get_funds_info()
 							if 'funds' in current_invest and not current_invest['funds'] and config.INVEST_AMOUNT > 0:
@@ -508,6 +534,7 @@ class CryptoBot:
 				except RuntimeError as error:
 					raise error
 				except Exception as error:
+					self.errors += 1
 					log.error(f"{self.session_name} | Unknown error: {error}")
 					await asyncio.sleep(delay=3)
 
