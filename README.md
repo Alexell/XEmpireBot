@@ -16,7 +16,7 @@
 | Claim offline bonus                   |     ✅     |
 | Automatic taps                        |     ✅     |
 | PvP negotiations                      |     ✅     |
-| Daily quiz solution                   |     ✅     |
+| Daily quiz and rebus solution         |     ✅     |
 | Investing in funds (combo for profit) |     ✅     |
 | Docker                                |     ✅     |
 
@@ -37,9 +37,9 @@
 
 You can obtain the **API_ID** and **API_HASH** after creating an application at [my.telegram.org/apps](https://my.telegram.org/apps)
 
-**PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle (the bot performs all actions, then sleeps for an hour, which is the recurring cycle).
+**PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. League names for the **PVP_LEAGUE** parameter: `bronze`, `silver`, `gold`, `platina`, `diamond`. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle (the bot performs all actions, then sleeps for an hour, which is the recurring cycle).
 
-The answer to the **daily quiz** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.ru/crypto/musk-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. However, for investing in the funds, you also need to specify the investment amount in the **INVEST_AMOUNT** parameter. Specify strictly one of the three amounts that are available to you in the game itself. If no amount is specified, the bot will not invest, and only the quiz will be executed.
+The answers to the **daily quiz**, **rebus** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.ru/crypto/musk-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. However, for investing in the funds, you also need to specify the investment amount in the **INVEST_AMOUNT** parameter. Specify strictly one of the three amounts that are available to you in the game itself. If no amount is specified, the bot will not invest, and only the quiz will be executed.
 
 ## Quick start
 ### Windows
