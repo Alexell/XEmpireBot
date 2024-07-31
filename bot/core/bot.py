@@ -233,7 +233,6 @@ class CryptoBot:
 					if 'quiz' in name:
 						if quest['isRewarded'] == False:
 							self.need_quiz = True
-							self.need_rebus = True
 						continue
 					if quest['isComplete'] == True and quest['isRewarded'] == False:
 						if await self.daily_quest_reward(quest=name):
@@ -550,10 +549,6 @@ class CryptoBot:
 					else:
 						log.info(f"{self.session_name} | Daily reward not available")
 					
-					for quest in full_profile['data']['quests']:
-						if 'rebus' in quest:
-							self.rebus_key = quest
-							break
 					unrewarded_quests = [quest['key'] for quest in full_profile['data']['quests'] if not quest['isRewarded']]
 					if unrewarded_quests:
 						log.info(f"{self.session_name} | Quest rewards available")
@@ -603,6 +598,17 @@ class CryptoBot:
 							log.warning(f"{self.session_name} | Database is missing. PvP negotiations will be skipped this time.")
 					
 					# Daily quiz, rebus and combo invest with external data
+					for quest in self.dbs['dbQuests']:
+						if 'rebus' in quest['key']:
+							self.rebus_key = quest['key']
+							self.rebus_answer = quest['checkData']
+							break
+					self.need_rebus = True
+					for quest in full_profile['data']['quests']:
+						if self.rebus_key in quest['key']:
+							self.need_rebus = False
+							break
+					
 					helper = await self.get_helper()
 					cur_time_gmt = datetime.now(gmt_timezone)
 					cur_time_gmt_s = cur_time_gmt.strftime('%Y-%m-%d')
@@ -614,7 +620,7 @@ class CryptoBot:
 								self.need_quiz = False
 								log.success(f"{self.session_name} | Reward for daily quiz claimed")
 						if 'rebus' in helper and self.need_rebus:
-							if await self.solve_rebus(quest=self.rebus_key, code=helper['rebus']):
+							if await self.solve_rebus(quest=self.rebus_key, code=self.rebus_answer):
 								self.need_rebus = False
 								log.success(f"{self.session_name} | Reward for daily rebus claimed")
 						if 'funds' in helper:
