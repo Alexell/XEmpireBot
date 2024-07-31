@@ -148,6 +148,8 @@ class CryptoBot:
 			if success:
 				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
 		except Exception as error:
@@ -168,6 +170,8 @@ class CryptoBot:
 			if success:
 				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
 		except Exception as error:
@@ -186,6 +190,8 @@ class CryptoBot:
 			if success:
 				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
 		except Exception as error:
@@ -204,6 +210,8 @@ class CryptoBot:
 			if success:
 				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
 		except Exception as error:
@@ -263,6 +271,8 @@ class CryptoBot:
 			if success:
 				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
 		except Exception as error:
@@ -292,6 +302,8 @@ class CryptoBot:
 				if success:
 					self.errors = 0
 					self.balance = int(response_json['data']['hero']['money'])
+					self.level = int(response_json['data']['hero']['level'])
+					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
 					log.success(f"{self.session_name} | Earned money: +{earned_money} | Energy left: {energy}")
 			except Exception as error:
@@ -360,6 +372,8 @@ class CryptoBot:
 					success = response_json.get('success', False)
 					if success:
 						self.balance = int(response_json['data']['hero']['money'])
+						self.level = int(response_json['data']['hero']['level'])
+						self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					
 					await asyncio.sleep(random.randint(1, 2))
 			
@@ -393,6 +407,56 @@ class CryptoBot:
 			await asyncio.sleep(delay=3)
 			return {}
 
+	def calculate_bet(self) -> int:
+		bet_steps_count = 7 # from game js, may be changed in the future
+		def smart_zero_round(amount):
+			def round_to_nearest(value, base=100):
+				return round(value / base) * base
+
+			if amount < 100:
+				return round_to_nearest(amount, 50)
+			elif amount < 1000:
+				return round_to_nearest(amount, 100)
+			elif amount < 10000:
+				return round_to_nearest(amount, 1000)
+			elif amount < 100000:
+				return round_to_nearest(amount, 10000)
+			elif amount < 1000000:
+				return round_to_nearest(amount, 100000)
+			elif amount < 10000000:
+				return round_to_nearest(amount, 1000000)
+			elif amount < 100000000:
+				return round_to_nearest(amount, 10000000)
+			else:
+				return round_to_nearest(amount, 1000)
+
+		def min_bet():
+			multiplier = 2
+			if self.level < 3:
+				multiplier = 5
+			elif self.level < 6:
+				multiplier = 4
+			elif self.level < 10:
+				multiplier = 3
+
+			calculated_bet = smart_zero_round(self.mph * multiplier / (bet_steps_count * 3))
+			return calculated_bet or 100
+
+		def max_bet():
+			return min_bet() * bet_steps_count
+		
+		avail_bet = 0
+		max_bet = max_bet()
+		if max_bet < self.balance:
+			avail_bet = max_bet
+		else: # reduce the bet if there is not enough money
+			min_bet = min_bet()
+			while max_bet > self.balance and max_bet - min_bet >= min_bet:
+				max_bet -= min_bet
+			avail_bet = max(max_bet, min_bet)
+		
+		return avail_bet
+	
 	async def invest(self, fund: str, amount: int) -> None:
 		url = self.api_url + '/fund/invest'
 		if self.balance < amount:
@@ -408,6 +472,8 @@ class CryptoBot:
 			if success:
 				self.errors = 0
 				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				for fnd in response_json['data']['funds']:
 					if fnd['fundKey'] == fund:
 						money = fnd['moneyProfit']
@@ -451,6 +517,8 @@ class CryptoBot:
 							full_profile = await self.get_profile(full=True)
 							if self.user_id is None: self.user_id = int(full_profile['data']['profile']['id'])
 							self.balance = int(full_profile['data']['hero']['money'])
+							self.level = int(full_profile['data']['hero']['level'])
+							self.mph = int(full_profile['data']['hero']['moneyPerHour'])
 							offline_bonus = int(full_profile['data']['hero']['offlineBonus'])
 							if offline_bonus > 0:
 								if await self.get_offline_bonus():
@@ -461,9 +529,11 @@ class CryptoBot:
 						
 					profile = await self.get_profile(full=False)
 					self.balance = int(profile['data']['hero']['money'])
-					log.info(f"{self.session_name} | Level: {profile['data']['hero']['level']} | "
+					self.level = int(profile['data']['hero']['level'])
+					self.mph = int(profile['data']['hero']['moneyPerHour'])
+					log.info(f"{self.session_name} | Level: {self.level} | "
 								f"Balance: {self.balance} | "
-								f"Money per hour: {profile['data']['hero']['moneyPerHour']}")
+								f"Money per hour: {self.mph}")
 					
 					daily_rewards = full_profile['data']['dailyRewards']
 					daily_index = None
@@ -516,7 +586,7 @@ class CryptoBot:
 									break;
 
 							if league_data is not None:
-								if int(profile['data']['hero']['level']) >= int(league_data['requiredLevel']):
+								if self.level >= int(league_data['requiredLevel']):
 									self.strategies = [strategy['key'] for strategy in self.dbs['dbNegotiationsStrategy']]
 									if config.PVP_STRATEGY == 'random' or config.PVP_STRATEGY in self.strategies:
 										await self.perform_pvp(league=league_data, strategy=config.PVP_STRATEGY, count=config.PVP_COUNT)
@@ -549,15 +619,17 @@ class CryptoBot:
 								log.success(f"{self.session_name} | Reward for daily rebus claimed")
 						if 'funds' in helper:
 							current_invest = await self.get_funds_info()
-							if 'funds' in current_invest and not current_invest['funds'] and config.INVEST_AMOUNT > 0:
+							if 'funds' in current_invest and not current_invest['funds']:
 								for fund in helper['funds']:
-									await self.invest(fund=fund, amount=config.INVEST_AMOUNT)
+									await self.invest(fund=fund, amount=self.calculate_bet())
 					
 					profile = await self.get_profile(full=False)
 					self.balance = int(profile['data']['hero']['money'])
-					log.info(f"{self.session_name} | Level: {profile['data']['hero']['level']} | "
+					self.level = int(profile['data']['hero']['level'])
+					self.mph = int(profile['data']['hero']['moneyPerHour'])
+					log.info(f"{self.session_name} | Level: {self.level} | "
 								f"Balance: {self.balance} | "
-								f"Money per hour: {profile['data']['hero']['moneyPerHour']}")
+								f"Money per hour: {self.mph}")
 					
 					log.info(f"{self.session_name} | Sleep 1 hour")
 					await asyncio.sleep(3600)
@@ -566,7 +638,6 @@ class CryptoBot:
 				except RuntimeError as error:
 					raise error
 				except Exception as error:
-					self.errors += 1
 					log.error(f"{self.session_name} | Unknown error: {error}")
 					await asyncio.sleep(delay=3)
 
