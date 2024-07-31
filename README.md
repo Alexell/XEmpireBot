@@ -23,7 +23,7 @@
 ## [Options](https://github.com/Alexell/MuskEmpireBot/blob/main/.env-example)
 | Option                  | Description                                                       |
 |-------------------------|-------------------------------------------------------------------|
-| **API_ID / API_HASH**   | Platform data for launching a Telegram session (default: Android) |
+| **API_ID / API_HASH**   | Platform data for launching a Telegram session                    |
 | **TAPS_ENABLED**        | Taps enabled (True / False)                                       |
 | **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)          |
 | **PVP_ENABLED**         | PvP negotiations enabled (True / False)                           |
@@ -39,7 +39,7 @@ You can obtain the **API_ID** and **API_HASH** after creating an application at 
 
 **PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. League names for the **PVP_LEAGUE** parameter: `bronze`, `silver`, `gold`, `platina`, `diamond`. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle (the bot performs all actions, then sleeps for an hour, which is the recurring cycle).
 
-The answers to the **daily quiz**, **rebus** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.ru/crypto/musk-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. However, for investing in the funds, you also need to specify the investment amount in the **INVEST_AMOUNT** parameter. Specify strictly one of the three amounts that are available to you in the game itself. If no amount is specified, the bot will not invest, and only the quiz will be executed.
+The answer to the **daily quiz** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.ru/crypto/musk-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. When investing, the bet amount will always be the maximum, as the profit is guaranteed. If there is not enough money for the maximum bet, the bet amount will be reduced.
 
 ## Quick start
 ### Windows
