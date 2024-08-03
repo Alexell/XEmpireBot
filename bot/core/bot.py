@@ -577,25 +577,42 @@ class CryptoBot:
 					if config.PVP_ENABLED:
 						if self.dbs:
 							league_data = None
+							selected_league = None
 							for league in self.dbs['dbNegotiationsLeague']:
-								if league['key'] == config.PVP_LEAGUE:
-									league_data = league
-									break;
-
-							if league_data is not None:
-								if self.level >= int(league_data['requiredLevel']):
-									self.strategies = [strategy['key'] for strategy in self.dbs['dbNegotiationsStrategy']]
-									if config.PVP_STRATEGY == 'random' or config.PVP_STRATEGY in self.strategies:
-										await self.perform_pvp(league=league_data, strategy=config.PVP_STRATEGY, count=config.PVP_COUNT)
+								if config.PVP_LEAGUE == 'auto':
+									if self.level >= league['requiredLevel'] and self.level <= league['maxLevel']:
+										if league_data is None or league['requiredLevel'] < league_data['requiredLevel']:
+											league_data = league
+								else:
+									if league['key'] == config.PVP_LEAGUE:
+										selected_league = league
+										if self.level >= league['requiredLevel'] and self.level <= league['maxLevel']:
+											league_data = league
+											break
+							
+							# if the current league is no longer available, select the next league
+							if config.PVP_LEAGUE != 'auto' and league_data is None:
+								if selected_league:
+									if config.PVP_UPGRADE_LEAGUE:
+										for league in self.dbs['dbNegotiationsLeague']:
+											if league['requiredLevel'] > selected_league['requiredLevel'] and self.level >= league['requiredLevel']:
+												league_data = league
+												break
+										log.info(f"{self.session_name} | Selected league is no longer available. New league: {league_data['key']}.")
 									else:
 										config.PVP_ENABLED = False
-										log.warning(f"{self.session_name} | PVP_STRATEGY param is invalid. PvP negotiations disabled.")
+										log.warning(f"{self.session_name} | Selected league is no longer available. PvP negotiations disabled.")
 								else:
 									config.PVP_ENABLED = False
-									log.warning(f"{self.session_name} | Your level is too low for the {config.PVP_LEAGUE} league. PvP negotiations disabled.")
-							else:
-								config.PVP_ENABLED = False
-								log.warning(f"{self.session_name} | PVP_LEAGUE param is invalid. PvP negotiations disabled.")
+									log.warning(f"{self.session_name} | PVP_LEAGUE param is invalid. PvP negotiations disabled.")
+
+							if league_data is not None:
+								self.strategies = [strategy['key'] for strategy in self.dbs['dbNegotiationsStrategy']]
+								if config.PVP_STRATEGY == 'random' or config.PVP_STRATEGY in self.strategies:
+									await self.perform_pvp(league=league_data, strategy=config.PVP_STRATEGY, count=config.PVP_COUNT)
+								else:
+									config.PVP_ENABLED = False
+									log.warning(f"{self.session_name} | PVP_STRATEGY param is invalid. PvP negotiations disabled.")
 						else:
 							log.warning(f"{self.session_name} | Database is missing. PvP negotiations will be skipped this time.")
 					

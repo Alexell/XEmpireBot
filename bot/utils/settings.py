@@ -19,7 +19,8 @@ class Settings(BaseSettings):
 	TAPS_ENABLED: bool = True
 	TAPS_PER_SECOND: list[int] = [20, 30] # tested with 4 fingers
 	PVP_ENABLED: bool = False
-	PVP_LEAGUE: str = 'bronze'
+	PVP_LEAGUE: str = 'auto'
+	PVP_UPGRADE_LEAGUE: bool = False
 	PVP_STRATEGY: str = 'random'
 	PVP_COUNT: int = 10
 
