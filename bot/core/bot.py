@@ -337,8 +337,9 @@ class CryptoBot:
 				response_json = await response.json()
 				success = response_json.get('success', False)
 				if success:
+					self.errors = 0
 					if response_json['data']['opponent'] is None:
-						await asyncio.sleep(random.randint(2, 4))
+						await asyncio.sleep(random.randint(5, 10))
 						continue
 					
 					await asyncio.sleep(random.randint(6, 7))
@@ -370,6 +371,7 @@ class CryptoBot:
 					response_json = await response.json()
 					success = response_json.get('success', False)
 					if success:
+						self.errors = 0
 						self.balance = int(response_json['data']['hero']['money'])
 						self.level = int(response_json['data']['hero']['level'])
 						self.mph = int(response_json['data']['hero']['moneyPerHour'])
@@ -379,7 +381,7 @@ class CryptoBot:
 			except Exception as error:
 				log.error(f"{self.session_name} | PvP error: {str(error)}")
 				self.errors += 1
-				await asyncio.sleep(random.randint(5, 10))
+				await asyncio.sleep(random.randint(10, 30))
 		money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
@@ -619,7 +621,7 @@ class CryptoBot:
 							if await self.daily_quest_reward(quest='quiz', code=helper['quiz']):
 								self.need_quiz = False
 								log.success(f"{self.session_name} | Reward for daily quiz claimed")
-						if 'rebus' in helper and self.need_rebus:
+						if self.need_rebus:
 							if await self.solve_rebus(quest=self.rebus_key, code=self.rebus_answer):
 								self.need_rebus = False
 								log.success(f"{self.session_name} | Reward for daily rebus claimed")
