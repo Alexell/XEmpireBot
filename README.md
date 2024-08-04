@@ -1,4 +1,4 @@
-# Bot for [Musk Empire](https://alexell.ru/cc/musk)
+# Bot for [X Empire](https://alexell.pro/cc/xempire) (Musk Empire)
 
 ![img1](.github/images/demo.png)
 
@@ -20,7 +20,7 @@
 | Investing in funds (combo for profit) |     ✅     |
 | Docker                                |     ✅     |
 
-## [Options](https://github.com/Alexell/MuskEmpireBot/blob/main/.env-example)
+## [Options](https://github.com/Alexell/XEmpireBot/blob/main/.env-example)
 | Option                  | Description                                                                     |
 |-------------------------|---------------------------------------------------------------------------------|
 | **API_ID / API_HASH**   | Platform data for launching a Telegram session                                  |
@@ -49,14 +49,14 @@ The answer to the **daily quiz** and the list of funds with guaranteed profits f
 3. Use `START.bat` to launch the bot (or in the console: `python main.py`).
 
 ### Linux
-1. Clone the repository: `git clone https://github.com/Alexell/MuskEmpireBot.git && cd MuskEmpireBot`
+1. Clone the repository: `git clone https://github.com/Alexell/XEmpireBot.git && cd XEmpireBot`
 2. Run the installation: `chmod +x INSTALL.sh START.sh && ./INSTALL.sh`, then specify your API_ID and API_HASH in the .env file.
 3. Use `./START.sh` to run the bot (or in the console: `python3 main.py`).
 
 ## Running in Docker
 ```
-$ git clone https://github.com/Alexell/MuskEmpireBot.git
-$ cd MuskEmpireBot
+$ git clone https://github.com/Alexell/XEmpireBot.git
+$ cd XEmpireBot
 $ cp .env-example .env
 $ nano .env # specify your API_ID and API_HASH, the rest can be left as default
 ```
@@ -67,17 +67,17 @@ $ docker-compose start # start in background mode (default arguments: -a 2)
 ```
 ### Docker
 ```
-$ docker build -t muskempire_bot .
-$ docker run --name MuskEmpireBot -v .:/app -it muskempire_bot -a 1 # first run for authorization
-$ docker rm MuskEmpireBot # remove container to recreate with default arguments
-$ docker run -d --restart unless-stopped --name MuskEmpireBot -v .:/app muskempire_bot # start in background mode (default arguments: -a 2)
+$ docker build -t xempire_bot .
+$ docker run --name XEmpireBot -v .:/app -it xempire_bot -a 1 # first run for authorization
+$ docker rm XEmpireBot # remove container to recreate with default arguments
+$ docker run -d --restart unless-stopped --name XEmpireBot -v .:/app xempire_bot # start in background mode (default arguments: -a 2)
 ```
 
 ## Manual installation
-You can download [**Repository**](https://github.com/Alexell/MuskEmpireBot) by cloning it to your system and installing the necessary dependencies:
+You can download [**Repository**](https://github.com/Alexell/XEmpireBot) by cloning it to your system and installing the necessary dependencies:
 ```
-$ git clone https://github.com/Alexell/MuskEmpireBot.git
-$ cd MuskEmpireBot
+$ git clone https://github.com/Alexell/XEmpireBot.git
+$ cd XEmpireBot
 
 # Linux
 $ python3 -m venv venv
@@ -108,7 +108,7 @@ $ python3 main.py -a (1/2)
 
 ## Running a bot in the background (Linux)
 ```
-$ cd MuskEmpireBot
+$ cd XEmpireBot
 
 # with logging
 $ setsid venv/bin/python3 main.py --action 2 >> app.log 2>&1 &
