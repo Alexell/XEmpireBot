@@ -289,7 +289,7 @@ class CryptoBot:
 			energy_spent = math.ceil(earned_money / 2)
 			energy -= energy_spent
 			if energy < 0:
-				log.info(f"{self.session_name} | Taps stopped (not enough energy)")
+				log.warning(f"{self.session_name} | Taps stopped (not enough energy)")
 				break
 			await asyncio.sleep(delay=seconds)
 			try:
@@ -325,7 +325,11 @@ class CryptoBot:
 		while count > 0:
 			if self.balance < int(league['maxContract']):
 				money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
-				log.info(f"{self.session_name} | PvP negotiations stopped (not enough money). {money_str}")
+				log.warning(f"{self.session_name} | PvP negotiations stopped (not enough money). {money_str}")
+				break
+			if self.balance - int(league['maxContract']) < config.PROTECTED_BALANCE:
+				money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+				log.warning(f"{self.session_name} | PvP negotiations stopped (balance protection). {money_str}")
 				break
 			
 			if strategy == 'random': curent_strategy = random.choice(self.strategies)
@@ -462,7 +466,10 @@ class CryptoBot:
 	async def invest(self, fund: str, amount: int) -> None:
 		url = self.api_url + '/fund/invest'
 		if self.balance < amount:
-			log.info(f"{self.session_name} | Not enough money for invest")
+			log.warning(f"{self.session_name} | Not enough money for invest")
+			return
+		if self.balance - amount < config.PROTECTED_BALANCE:
+			log.warning(f"{self.session_name} | Investment skipped (balance protection)")
 			return
 		try:
 			json_data = {'data': {'fund': fund, 'money': amount}}
@@ -684,6 +691,9 @@ class CryptoBot:
 						while improved_skills < config.SKILLS_COUNT:
 							skill = calculate_best_skill(skills=self.dbs['dbSkills'], profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
 							if skill is not None:
+								if self.balance - skill['price'] < config.PROTECTED_BALANCE:
+									log.warning(f"{self.session_name} | Skill improvement stopped (balance protection)")
+									break
 								improve_data = await self.improve_skill(skill=skill['key'])
 								if improve_data is not None:
 									improved_skills += 1
