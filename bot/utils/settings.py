@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 	PVP_UPGRADE_LEAGUE: bool = False
 	PVP_STRATEGY: str = 'random'
 	PVP_COUNT: int = 10
+	SKILLS_COUNT: int = 5
 
 	SLEEP_BETWEEN_START: list[int] = [20, 360]
 	ERRORS_BEFORE_STOP: int = 3

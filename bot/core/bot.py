@@ -12,6 +12,7 @@ from pyrogram.raw.functions.messages import RequestWebView
 
 from bot.utils.logger import log
 from bot.utils.settings import config
+from .skills import calculate_best_skill
 from .headers import headers
 
 class CryptoBot:
@@ -485,6 +486,26 @@ class CryptoBot:
 			self.errors += 1
 			log.error(f"{self.session_name} | Invest error: {str(error)}")
 
+	async def improve_skill(self, skill: str) -> Dict[str, Any] | None:
+		url = self.api_url + '/skills/improve'
+		try:
+			json_data = {'data': skill}
+			await self.set_sign_headers(data=json_data)
+			response = await self.http_client.post(url, json=json_data)
+			response.raise_for_status()
+			response_json = await response.json()
+			success = response_json.get('success', False)
+			if success:
+				self.errors = 0
+				self.balance = int(response_json['data']['hero']['money'])
+				self.level = int(response_json['data']['hero']['level'])
+				self.mph = int(response_json['data']['hero']['moneyPerHour'])
+				return response_json
+			else: return None
+		except Exception as error:
+			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
+			return None
+
 	async def check_proxy(self, proxy: Proxy) -> None:
 		try:
 			response = await self.http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
@@ -655,6 +676,21 @@ class CryptoBot:
 					log.info(f"{self.session_name} | Level: {self.level} | "
 								f"Balance: {self.balance} | "
 								f"Money per hour: {self.mph}")
+					
+					# improve skills
+					if config.SKILLS_COUNT > 0:
+						improved_skills = 0
+						improve_data = None
+						while improved_skills < config.SKILLS_COUNT:
+							skill = calculate_best_skill(skills=self.dbs['dbSkills'], profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
+							if skill is not None:
+								improve_data = await self.improve_skill(skill=skill['key'])
+								if improve_data is not None:
+									improved_skills += 1
+									log.success(f"{self.session_name} | Skill {skill['key']} improved to level {skill['newlevel']}")
+									await asyncio.sleep(random.randint(2, 5))
+								else:
+									break
 					
 					log.info(f"{self.session_name} | Sleep 1 hour")
 					await asyncio.sleep(3600)

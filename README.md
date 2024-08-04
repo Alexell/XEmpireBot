@@ -18,23 +18,24 @@
 | PvP negotiations                      |     ✅     |
 | Daily quiz and rebus solution         |     ✅     |
 | Investing in funds (combo for profit) |     ✅     |
+| Automatic skill improvement           |     ✅     |
 | Docker                                |     ✅     |
 
 ## [Options](https://github.com/Alexell/XEmpireBot/blob/main/.env-example)
-| Option                  | Description                                                                     |
-|-------------------------|---------------------------------------------------------------------------------|
-| **API_ID / API_HASH**   | Platform data for launching a Telegram session                                  |
-| **TAPS_ENABLED**        | Taps enabled (True / False)                                                     |
-| **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                        |
-| **PVP_ENABLED**         | PvP negotiations enabled (True / False)                                         |
-| **PVP_LEAGUE**          | League in negotiations (e.g. bronze or auto for automatic selection)            |
-| **PVP_UPGRADE_LEAGUE**  | Upgrade league if league specified in PVP_LEAGUE is unavailable (True / False)  |
-| **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                          |
-| **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                      |
-| **INVEST_AMOUNT**       | Amount to invest in funds (e.g. 1400000)                                        |
-| **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                |
-| **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                     |
-| **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)                 |
+| Option                  | Description                                                                        |
+|-------------------------|------------------------------------------------------------------------------------|
+| **API_ID / API_HASH**   | Platform data for launching a Telegram session                                     |
+| **TAPS_ENABLED**        | Taps enabled (True / False)                                                        |
+| **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                           |
+| **PVP_ENABLED**         | PvP negotiations enabled (True / False)                                            |
+| **PVP_LEAGUE**          | League in negotiations (e.g. bronze or auto for automatic selection)               |
+| **PVP_UPGRADE_LEAGUE**  | Upgrade league if league specified in PVP_LEAGUE is unavailable (True / False)     |
+| **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                             |
+| **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                         |
+| **SKILLS_COUNT**        | Number of skills improved per cycle (e.g. 5)                                       |
+| **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                   |
+| **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                        |
+| **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)                    |
 
 You can obtain the **API_ID** and **API_HASH** after creating an application at [my.telegram.org/apps](https://my.telegram.org/apps)
 
