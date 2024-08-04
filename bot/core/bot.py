@@ -386,7 +386,7 @@ class CryptoBot:
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
 	async def get_helper(self) -> Dict[str, Any]:
-		url = 'https://alexell.ru/crypto/musk-empire/data.json'
+		url = 'https://alexell.pro/crypto/x-empire/data.json'
 		response = await self.http_client.get(url)
 		if response.status == 200:
 			response_json = await response.json()
