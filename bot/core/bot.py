@@ -314,6 +314,7 @@ class CryptoBot:
 	async def perform_pvp(self, league: Dict[str, Any], strategy: str, count: int) -> None:
 		url_info = self.api_url + '/pvp/info'
 		url_fight = self.api_url + '/pvp/fight'
+		url_cancel = self.api_url + '/pvp/fight/cancel'
 		url_claim = self.api_url + '/pvp/claim'
 		log.info(f"{self.session_name} | PvP negotiations started | League: {league['key']} | Strategy: {strategy}")
 		json_data = {}
@@ -322,6 +323,7 @@ class CryptoBot:
 		await asyncio.sleep(3)
 		curent_strategy = strategy
 		money = 0
+		search_attempts = 0
 		while count > 0:
 			if self.balance < int(league['maxContract']):
 				money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
@@ -335,6 +337,7 @@ class CryptoBot:
 			if strategy == 'random': curent_strategy = random.choice(self.strategies)
 			log.info(f"{self.session_name} | Searching opponent...")
 			try:
+				search_attempts += 1
 				json_data = {'data': {'league': league['key'], 'strategy': curent_strategy}}
 				await self.set_sign_headers(data=json_data)
 				response = await self.http_client.post(url_fight, json=json_data)
@@ -344,11 +347,18 @@ class CryptoBot:
 				if success:
 					self.errors = 0
 					if response_json['data']['opponent'] is None:
+						if search_attempts > 2:
+							json_data = {}
+							await self.set_sign_headers(data=json_data)
+							await self.http_client.post(url_cancel, json=json_data)
+							search_attempts = 0
+							log.info(f"{self.session_name} | Search cancelled")
 						await asyncio.sleep(random.randint(5, 10))
 						continue
 					
 					await asyncio.sleep(random.randint(6, 7))
 					count -= 1
+					search_attempts = 0
 					if int(response_json['data']['fight']['player1']) == self.user_id:
 						opponent_strategy = response_json['data']['fight']['player2Strategy']
 					else:
