@@ -305,7 +305,7 @@ class CryptoBot:
 					self.level = int(response_json['data']['hero']['level'])
 					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
-					log.success(f"{self.session_name} | Earned money: +{earned_money} | Energy left: {energy}")
+					log.success(f"{self.session_name} | Earned money: +{earned_money} | Energy left: {self.format_number(energy)}")
 			except Exception as error:
 				log.error(f"{self.session_name} | Taps error: {str(error)}")
 				self.errors += 1
@@ -397,7 +397,7 @@ class CryptoBot:
 				log.error(f"{self.session_name} | PvP error: {str(error)}")
 				self.errors += 1
 				await asyncio.sleep(random.randint(10, 30))
-		money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+		money_str = f"Profit: +{self.format_number(money)}" if money > 0 else (f"Loss: {self.format_number(money)}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
 	async def get_helper(self) -> Dict[str, Any]:
@@ -496,7 +496,7 @@ class CryptoBot:
 				for fnd in response_json['data']['funds']:
 					if fnd['fundKey'] == fund:
 						money = fnd['moneyProfit']
-						money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+						money_str = f"Profit: +{self.format_number(money)}" if money > 0 else (f"Loss: {self.format_number(money)}" if money < 0 else "Profit: 0")
 						log.success(f"{self.session_name} | Invest completed. {money_str}")
 						break
 		except Exception as error:
@@ -531,6 +531,9 @@ class CryptoBot:
 		except Exception as error:
 			log.error(f"{self.session_name} | Proxy: {proxy} | Error: {error}")
 
+	def format_number(self, number):
+		return f"{number:,}".replace(",", config.NUMBER_SEPARATOR)
+
 	async def run(self, proxy: str | None) -> None:
 		proxy_conn = ProxyConnector().from_url(proxy) if proxy else None
 
@@ -561,7 +564,7 @@ class CryptoBot:
 							offline_bonus = int(full_profile['data']['hero']['offlineBonus'])
 							if offline_bonus > 0:
 								if await self.get_offline_bonus():
-									log.success(f"{self.session_name} | Offline bonus claimed: +{offline_bonus}")
+									log.success(f"{self.session_name} | Offline bonus claimed: +{self.format_number(offline_bonus)}")
 							else:
 								log.info(f"{self.session_name} | Offline bonus not available")
 						else: continue
@@ -571,8 +574,8 @@ class CryptoBot:
 					self.level = int(profile['data']['hero']['level'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.balance} | "
-								f"Money per hour: {self.mph}")
+								f"Balance: {self.format_number(self.balance)} | "
+								f"Money per hour: {self.format_number(self.mph)}")
 					
 					daily_rewards = full_profile['data']['dailyRewards']
 					daily_index = None
@@ -691,8 +694,8 @@ class CryptoBot:
 					self.level = int(profile['data']['hero']['level'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.balance} | "
-								f"Money per hour: {self.mph}")
+								f"Balance: {self.format_number(self.balance)} | "
+								f"Money per hour: {self.format_number(self.mph)}")
 					
 					# improve skills
 					if config.SKILLS_COUNT > 0:

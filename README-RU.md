@@ -37,6 +37,7 @@
 | **SLEEP_BETWEEN_START** | Задержка перед запуском каждой сессии (напр. [20, 360])                         |
 | **ERRORS_BEFORE_STOP**  | Количество неудачных запросов, по достижению которых, бот остановится           |
 | **USE_PROXY_FROM_FILE** | Использовать-ли прокси из файла `proxies.txt` (True / False)                    |
+| **NUMBER_SEPARATOR**    | Разделитель групп разрядов (напр. ' ', ',')                                     |
 
 **API_ID** и **API_HASH** вы можете получить после создания приложения на [my.telegram.org/apps](https://my.telegram.org/apps)
 

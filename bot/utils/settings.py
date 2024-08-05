@@ -30,6 +30,8 @@ class Settings(BaseSettings):
 	ERRORS_BEFORE_STOP: int = 3
 	USE_PROXY_FROM_FILE: bool = False
 
+	NUMBER_SEPARATOR: str = ''
+
 try:
 	config = Settings()
 except Exception as error:

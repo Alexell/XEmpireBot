@@ -37,7 +37,7 @@
 | **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                   |
 | **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                        |
 | **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)                    |
-
+| **NUMBER_SEPARATOR**    | Thousand group separator (e.g. ' ', ',')                                           |
 You can obtain the **API_ID** and **API_HASH** after creating an application at [my.telegram.org/apps](https://my.telegram.org/apps)
 
 **PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. League names for the **PVP_LEAGUE** parameter: `bronze`, `silver`, `gold`, `platina`, `diamond`. You can also specify `auto` in the **PVP_LEAGUE** parameter, and the bot will automatically select the lowest available league for you. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle (the bot performs all actions, then sleeps for an hour, which is the recurring cycle).
