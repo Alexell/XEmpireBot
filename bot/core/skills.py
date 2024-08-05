@@ -102,42 +102,44 @@ def calculate_best_skill(skills: list, profile: Dict[str, Any], level: int, bala
 	qualified_skills = []
 	for skill in skills:
 		qualified = False
-		try:
-			my_skill = my_skills[skill["key"]]
-			skill_price = get_price(skill, my_skill["level"] +1 )
-			skill_profit = get_profit(skill, my_skill["level"] + 1)
-			if skill["maxLevel"] <= my_skill["level"]: continue
-			if (0 if my_skill["finishUpgradeDate"] is None else my_skill["finishUpgradeDate"]) < time() and balance > skill_price:
-				if len(skill["levels"]) == 0: qualified = True
+		if skill['key'] in my_skills: # skill found, check for improve
+			my_skill = my_skills[skill['key']]
+			skill_price = get_price(skill, my_skill['level'] + 1)
+			skill_profit = get_profit(skill, my_skill['level'] + 1)
+			if skill['maxLevel'] <= my_skill['level']: continue
+			if (0 if my_skill['finishUpgradeDate'] is None else my_skill['finishUpgradeDate']) < time() and balance > skill_price:
+				if not skill['levels']: qualified = True
 				else:
 					matched_skill_limit = None
-					for skill_limit in skill["levels"]:
-						if my_skill["level"] == skill_limit["level"]-1:
+					for skill_limit in skill['levels']:
+						if my_skill['level'] == skill_limit['level'] - 1:
 							matched_skill_limit = skill_limit
 							break
 					if matched_skill_limit is None: qualified = True
-					elif matched_skill_limit["requiredHeroLevel"] <= level and matched_skill_limit["requiredFriends"] <= friends:
-						if len(matched_skill_limit["requiredSkills"]) == 0: qualified = True
+					elif matched_skill_limit['requiredHeroLevel'] <= level and matched_skill_limit['requiredFriends'] <= friends:
+						if not matched_skill_limit['requiredSkills']: qualified = True
 						else:
-							for req_skill, req_level in matched_skill_limit["requiredSkills"].items():
-								if my_skills[req_skill]["level"] >= req_level: qualified = True
-		except:
-			skill_price = get_price(skill,1)
-			skill_profit = get_profit(skill,1)
-			if balance > skill_price and len(skill["levels"]) == 0: qualified = True
+							for req_skill, req_level in matched_skill_limit['requiredSkills'].items():
+								if my_skills.get(req_skill, {}).get('level', 0) >= req_level: qualified = True
+		else: # skill not found, check for buy
+			skill_price = get_price(skill, 1)
+			skill_profit = get_profit(skill, 1)
+			if balance > skill_price and not skill['levels']: qualified = True
 			else:
-				for skill_limit in skill["levels"]:
-					if skill_limit["requiredHeroLevel"] <= level and skill_limit["requiredFriends"] <= friends:
-						if len(skill_limit["requiredSkills"]) == 0: qualified = True
-						else:
-							for req_skill, req_level in skill_limit["requiredSkills"].items():
-								if my_skills[req_skill]["level"] >= req_level: qualified = True
+				skill_limit = skill['levels'][0]
+				if skill_limit['requiredHeroLevel'] <= level and skill_limit['requiredFriends'] <= friends:
+					if not skill_limit['requiredSkills']: qualified = True
+					else:
+						for req_skill, req_level in skill_limit['requiredSkills'].items():
+							if my_skills.get(req_skill, {}).get("level", 0) >= req_level: qualified = True
+
 		if qualified:
-			skill["ratio"] = skill_profit / skill_price
-			skill["price"] = skill_price
-			skill["profit"] = skill_profit
-			skill["newlevel"] = my_skills[skill["key"]]["level"] + 1
+			skill['ratio'] = skill_profit / skill_price
+			skill['price'] = skill_price
+			skill['profit'] = skill_profit
+			skill['newlevel'] = my_skills.get(skill['key'], {}).get('level', 0) + 1 # new level for improve or 1 level for buy
 			qualified_skills.append(skill)
+	
 	best_skill = sorted(qualified_skills, key=lambda x: x["ratio"])[-1]
 	if len(best_skill) > 0: return best_skill
 	else: return None
