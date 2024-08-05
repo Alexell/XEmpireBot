@@ -105,7 +105,9 @@ def calculate_best_skill(skills: list, profile: Dict[str, Any], level: int, bala
 		if skill['key'] in my_skills: # skill found, check for improve
 			my_skill = my_skills[skill['key']]
 			skill_price = get_price(skill, my_skill['level'] + 1)
-			skill_profit = get_profit(skill, my_skill['level'] + 1)
+			current_profit = get_profit(skill, my_skill['level'])
+			next_profit = get_profit(skill, my_skill['level'] + 1)
+			skill_profit = next_profit - current_profit
 			if skill['maxLevel'] <= my_skill['level']: continue
 			if (0 if my_skill['finishUpgradeDate'] is None else my_skill['finishUpgradeDate']) < time() and balance > skill_price:
 				if not skill['levels']: qualified = True
