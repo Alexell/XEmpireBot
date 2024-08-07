@@ -523,6 +523,28 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
 			return None
 
+	def number_short(self, value, round_value=False):
+		n = 1 if value >= 0 else -1
+		
+		if abs(value) < 1e3:
+			return round(value)
+		
+		if abs(value) >= 1e3 and abs(value) < 1e6:
+			result = value / 1e3
+			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}K"
+		
+		if abs(value) >= 1e6 and abs(value) < 1e9:
+			result = value / 1e6
+			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}M"
+		
+		if abs(value) >= 1e9 and abs(value) < 1e12:
+			result = value / 1e9
+			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}B"
+		
+		if abs(value) >= 1e12:
+			result = value / 1e12
+			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}T"
+
 	async def check_proxy(self, proxy: Proxy) -> None:
 		try:
 			response = await self.http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
@@ -571,8 +593,8 @@ class CryptoBot:
 					self.level = int(profile['data']['hero']['level'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.balance} | "
-								f"Money per hour: {self.mph}")
+								f"Balance: {self.number_short(self.balance)} | "
+								f"Profit per hour: +{self.number_short(self.mph)}")
 					
 					daily_rewards = full_profile['data']['dailyRewards']
 					daily_index = None
@@ -691,8 +713,8 @@ class CryptoBot:
 					self.level = int(profile['data']['hero']['level'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.balance} | "
-								f"Money per hour: {self.mph}")
+								f"Balance: {self.number_short(self.balance)} | "
+								f"Profit per hour: +{self.number_short(self.mph)}")
 					
 					# improve skills
 					if config.SKILLS_COUNT > 0:
@@ -711,6 +733,10 @@ class CryptoBot:
 									await asyncio.sleep(random.randint(2, 5))
 								else:
 									break
+									
+					log.info(f"{self.session_name} | Level: {self.level} | "
+								f"Balance: {self.number_short(self.balance)} | "
+								f"Profit per hour: +{self.number_short(self.mph)}")
 					
 					log.info(f"{self.session_name} | Sleep 1 hour")
 					await asyncio.sleep(3600)
