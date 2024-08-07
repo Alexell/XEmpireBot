@@ -2,6 +2,8 @@ from time import time
 from datetime import datetime, timezone
 from typing import Any, Dict
 
+########## SKILLS ##########
+
 # functions from game js
 def get_price(e, t):
 	return calculate(e['priceFormula'], t, e['priceBasic'], e['priceFormulaK']) if t else 0
@@ -145,3 +147,78 @@ def calculate_best_skill(skills: list, profile: Dict[str, Any], level: int, bala
 	best_skill = sorted(qualified_skills, key=lambda x: x["ratio"])[-1]
 	if len(best_skill) > 0: return best_skill
 	else: return None
+
+
+########## MATH ##########
+
+def calculate_bet(level: int, mph: int, balance: int) -> int:
+	bet_steps_count = 7 # from game js, may be changed in the future
+	def smart_zero_round(amount):
+		def round_to_nearest(value, base=100):
+			return round(value / base) * base
+
+		if amount < 100:
+			return round_to_nearest(amount, 50)
+		elif amount < 1000:
+			return round_to_nearest(amount, 100)
+		elif amount < 10000:
+			return round_to_nearest(amount, 1000)
+		elif amount < 100000:
+			return round_to_nearest(amount, 10000)
+		elif amount < 1000000:
+			return round_to_nearest(amount, 100000)
+		elif amount < 10000000:
+			return round_to_nearest(amount, 1000000)
+		elif amount < 100000000:
+			return round_to_nearest(amount, 10000000)
+		else:
+			return round_to_nearest(amount, 1000)
+
+	def min_bet():
+		multiplier = 2
+		if level < 3:
+			multiplier = 5
+		elif level < 6:
+			multiplier = 4
+		elif level < 10:
+			multiplier = 3
+
+		calculated_bet = smart_zero_round(mph * multiplier / (bet_steps_count * 3))
+		return calculated_bet or 100
+
+	def max_bet():
+		return min_bet() * bet_steps_count
+	
+	avail_bet = 0
+	max_bet = max_bet()
+	if max_bet < balance:
+		avail_bet = max_bet
+	else: # reduce the bet if there is not enough money
+		min_bet = min_bet()
+		while max_bet > balance and max_bet - min_bet >= min_bet:
+			max_bet -= min_bet
+		avail_bet = max(max_bet, min_bet)
+	
+	return avail_bet
+	
+def number_short(value: int, round_value: bool = False) -> str:
+	n = 1 if value >= 0 else -1
+	
+	if abs(value) < 1e3:
+		return round(value)
+	
+	if abs(value) >= 1e3 and abs(value) < 1e6:
+		result = value / 1e3
+		return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}K"
+	
+	if abs(value) >= 1e6 and abs(value) < 1e9:
+		result = value / 1e6
+		return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}M"
+	
+	if abs(value) >= 1e9 and abs(value) < 1e12:
+		result = value / 1e9
+		return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}B"
+	
+	if abs(value) >= 1e12:
+		result = value / 1e12
+		return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}T"

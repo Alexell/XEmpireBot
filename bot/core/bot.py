@@ -12,7 +12,7 @@ from pyrogram.raw.functions.messages import RequestWebView
 
 from bot.utils.logger import log
 from bot.utils.settings import config
-from .skills import calculate_best_skill
+from bot.utils.functions import calculate_bet, calculate_best_skill, number_short
 from .headers import headers
 
 class CryptoBot:
@@ -305,7 +305,7 @@ class CryptoBot:
 					self.balance = int(response_json['data']['hero']['money'])
 					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
-					log.success(f"{self.session_name} | Earned money: +{self.number_short(earned_money)} | Energy left: {energy}")
+					log.success(f"{self.session_name} | Earned money: +{number_short(value=earned_money)} | Energy left: {energy}")
 			except Exception as error:
 				log.error(f"{self.session_name} | Taps error: {str(error)}")
 				self.errors += 1
@@ -326,11 +326,11 @@ class CryptoBot:
 		search_attempts = 0
 		while count > 0:
 			if self.balance < int(league['maxContract']):
-				money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
+				money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
 				log.warning(f"{self.session_name} | PvP negotiations stopped (not enough money). {money_str}")
 				break
 			if self.balance - int(league['maxContract']) < config.PROTECTED_BALANCE:
-				money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
+				money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
 				log.warning(f"{self.session_name} | PvP negotiations stopped (balance protection). {money_str}")
 				break
 			
@@ -368,16 +368,16 @@ class CryptoBot:
 					winner = int(response_json['data']['fight']['winner'])
 					if winner == self.user_id:
 						money += money_profit
-						log.success(f"{self.session_name} | Contract sum: {self.number_short(money_contract)} | "
+						log.success(f"{self.session_name} | Contract sum: {number_short(value=money_contract)} | "
 									f"Your strategy: {curent_strategy} | "
 									f"Opponent strategy: {opponent_strategy} | "
-									f"You WIN (+{self.number_short(money_profit)})")
+									f"You WIN (+{number_short(value=money_profit)})")
 					else:
 						money -= money_contract
-						log.success(f"{self.session_name} | Contract sum: {self.number_short(money_contract)} | "
+						log.success(f"{self.session_name} | Contract sum: {number_short(value=money_contract)} | "
 									f"Your strategy: {curent_strategy} | "
 									f"Opponent strategy: {opponent_strategy} | "
-									f"You LOSE (-{self.number_short(money_contract)})")
+									f"You LOSE (-{number_short(value=money_contract)})")
 					
 					json_data = {}
 					await self.set_sign_headers(data=json_data)
@@ -397,7 +397,7 @@ class CryptoBot:
 				log.error(f"{self.session_name} | PvP error: {str(error)}")
 				self.errors += 1
 				await asyncio.sleep(random.randint(10, 30))
-		money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
+		money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
 	async def get_helper(self) -> Dict[str, Any]:
@@ -423,56 +423,6 @@ class CryptoBot:
 			await asyncio.sleep(delay=3)
 			return {}
 
-	def calculate_bet(self) -> int:
-		bet_steps_count = 7 # from game js, may be changed in the future
-		def smart_zero_round(amount):
-			def round_to_nearest(value, base=100):
-				return round(value / base) * base
-
-			if amount < 100:
-				return round_to_nearest(amount, 50)
-			elif amount < 1000:
-				return round_to_nearest(amount, 100)
-			elif amount < 10000:
-				return round_to_nearest(amount, 1000)
-			elif amount < 100000:
-				return round_to_nearest(amount, 10000)
-			elif amount < 1000000:
-				return round_to_nearest(amount, 100000)
-			elif amount < 10000000:
-				return round_to_nearest(amount, 1000000)
-			elif amount < 100000000:
-				return round_to_nearest(amount, 10000000)
-			else:
-				return round_to_nearest(amount, 1000)
-
-		def min_bet():
-			multiplier = 2
-			if self.level < 3:
-				multiplier = 5
-			elif self.level < 6:
-				multiplier = 4
-			elif self.level < 10:
-				multiplier = 3
-
-			calculated_bet = smart_zero_round(self.mph * multiplier / (bet_steps_count * 3))
-			return calculated_bet or 100
-
-		def max_bet():
-			return min_bet() * bet_steps_count
-		
-		avail_bet = 0
-		max_bet = max_bet()
-		if max_bet < self.balance:
-			avail_bet = max_bet
-		else: # reduce the bet if there is not enough money
-			min_bet = min_bet()
-			while max_bet > self.balance and max_bet - min_bet >= min_bet:
-				max_bet -= min_bet
-			avail_bet = max(max_bet, min_bet)
-		
-		return avail_bet
-	
 	async def invest(self, fund: str, amount: int) -> None:
 		url = self.api_url + '/fund/invest'
 		if self.balance < amount:
@@ -496,7 +446,7 @@ class CryptoBot:
 				for fnd in response_json['data']['funds']:
 					if fnd['fundKey'] == fund:
 						money = fnd['moneyProfit']
-						money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
+						money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
 						log.success(f"{self.session_name} | Invest completed. {money_str}")
 						break
 		except Exception as error:
@@ -522,28 +472,6 @@ class CryptoBot:
 		except Exception as error:
 			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
 			return None
-
-	def number_short(self, value, round_value=False):
-		n = 1 if value >= 0 else -1
-		
-		if abs(value) < 1e3:
-			return round(value)
-		
-		if abs(value) >= 1e3 and abs(value) < 1e6:
-			result = value / 1e3
-			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}K"
-		
-		if abs(value) >= 1e6 and abs(value) < 1e9:
-			result = value / 1e6
-			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}M"
-		
-		if abs(value) >= 1e9 and abs(value) < 1e12:
-			result = value / 1e9
-			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}B"
-		
-		if abs(value) >= 1e12:
-			result = value / 1e12
-			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}T"
 
 	def update_level(self, level: int) -> None:
 		if level > self.level:
@@ -591,7 +519,7 @@ class CryptoBot:
 							offline_bonus = int(full_profile['data']['hero']['offlineBonus'])
 							if offline_bonus > 0:
 								if await self.get_offline_bonus():
-									log.success(f"{self.session_name} | Offline bonus claimed: +{self.number_short(offline_bonus)}")
+									log.success(f"{self.session_name} | Offline bonus claimed: +{number_short(value=offline_bonus)}")
 							else:
 								log.info(f"{self.session_name} | Offline bonus not available")
 						else: continue
@@ -601,8 +529,8 @@ class CryptoBot:
 					self.balance = int(profile['data']['hero']['money'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.number_short(self.balance)} | "
-								f"Profit per hour: +{self.number_short(self.mph)}")
+								f"Balance: {number_short(value=self.balance)} | "
+								f"Profit per hour: +{number_short(value=self.mph)}")
 					
 					daily_rewards = full_profile['data']['dailyRewards']
 					daily_index = None
@@ -714,15 +642,15 @@ class CryptoBot:
 							current_invest = await self.get_funds_info()
 							if 'funds' in current_invest and not current_invest['funds']:
 								for fund in helper['funds']:
-									await self.invest(fund=fund, amount=self.calculate_bet())
+									await self.invest(fund=fund, amount=calculate_bet(level=self.level, mph=self.mph, balance=self.balance))
 					
 					profile = await self.get_profile(full=False)
 					self.update_level(level=int(profile['data']['hero']['level']))
 					self.balance = int(profile['data']['hero']['money'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.number_short(self.balance)} | "
-								f"Profit per hour: +{self.number_short(self.mph)}")
+								f"Balance: {number_short(value=self.balance)} | "
+								f"Profit per hour: +{number_short(value=self.mph)}")
 					
 					# improve skills
 					if config.SKILLS_COUNT > 0:
@@ -743,8 +671,8 @@ class CryptoBot:
 									break
 									
 					log.info(f"{self.session_name} | Level: {self.level} | "
-								f"Balance: {self.number_short(self.balance)} | "
-								f"Profit per hour: +{self.number_short(self.mph)}")
+								f"Balance: {number_short(value=self.balance)} | "
+								f"Profit per hour: +{number_short(value=self.mph)}")
 					
 					log.info(f"{self.session_name} | Sleep 1 hour")
 					await asyncio.sleep(3600)
