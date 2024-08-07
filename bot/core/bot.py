@@ -305,7 +305,7 @@ class CryptoBot:
 					self.balance = int(response_json['data']['hero']['money'])
 					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
-					log.success(f"{self.session_name} | Earned money: +{earned_money} | Energy left: {energy}")
+					log.success(f"{self.session_name} | Earned money: +{self.number_short(earned_money)} | Energy left: {energy}")
 			except Exception as error:
 				log.error(f"{self.session_name} | Taps error: {str(error)}")
 				self.errors += 1
@@ -326,11 +326,11 @@ class CryptoBot:
 		search_attempts = 0
 		while count > 0:
 			if self.balance < int(league['maxContract']):
-				money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+				money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
 				log.warning(f"{self.session_name} | PvP negotiations stopped (not enough money). {money_str}")
 				break
 			if self.balance - int(league['maxContract']) < config.PROTECTED_BALANCE:
-				money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+				money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
 				log.warning(f"{self.session_name} | PvP negotiations stopped (balance protection). {money_str}")
 				break
 			
@@ -364,20 +364,20 @@ class CryptoBot:
 					else:
 						opponent_strategy = response_json['data']['fight']['player1Strategy']
 					money_contract = response_json['data']['fight']['moneyContract']
-					money_profit = response_json['data']['fight']['moneyContract']
+					money_profit = response_json['data']['fight']['moneyProfit']
 					winner = int(response_json['data']['fight']['winner'])
 					if winner == self.user_id:
 						money += money_profit
-						log.success(f"{self.session_name} | Contract sum: {money_contract} | "
+						log.success(f"{self.session_name} | Contract sum: {self.number_short(money_contract)} | "
 									f"Your strategy: {curent_strategy} | "
 									f"Opponent strategy: {opponent_strategy} | "
-									f"You WIN (+{money_profit})")
+									f"You WIN (+{self.number_short(money_profit)})")
 					else:
 						money -= money_contract
-						log.success(f"{self.session_name} | Contract sum: {money_contract} | "
+						log.success(f"{self.session_name} | Contract sum: {self.number_short(money_contract)} | "
 									f"Your strategy: {curent_strategy} | "
 									f"Opponent strategy: {opponent_strategy} | "
-									f"You LOSE (-{money_contract})")
+									f"You LOSE (-{self.number_short(money_contract)})")
 					
 					json_data = {}
 					await self.set_sign_headers(data=json_data)
@@ -397,7 +397,7 @@ class CryptoBot:
 				log.error(f"{self.session_name} | PvP error: {str(error)}")
 				self.errors += 1
 				await asyncio.sleep(random.randint(10, 30))
-		money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+		money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
 	async def get_helper(self) -> Dict[str, Any]:
@@ -496,7 +496,7 @@ class CryptoBot:
 				for fnd in response_json['data']['funds']:
 					if fnd['fundKey'] == fund:
 						money = fnd['moneyProfit']
-						money_str = f"Profit: +{money}" if money > 0 else (f"Loss: {money}" if money < 0 else "Profit: 0")
+						money_str = f"Profit: +{self.number_short(money)}" if money > 0 else (f"Loss: {self.number_short(money)}" if money < 0 else "Profit: 0")
 						log.success(f"{self.session_name} | Invest completed. {money_str}")
 						break
 		except Exception as error:
@@ -591,7 +591,7 @@ class CryptoBot:
 							offline_bonus = int(full_profile['data']['hero']['offlineBonus'])
 							if offline_bonus > 0:
 								if await self.get_offline_bonus():
-									log.success(f"{self.session_name} | Offline bonus claimed: +{offline_bonus}")
+									log.success(f"{self.session_name} | Offline bonus claimed: +{self.number_short(offline_bonus)}")
 							else:
 								log.info(f"{self.session_name} | Offline bonus not available")
 						else: continue
