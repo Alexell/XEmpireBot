@@ -148,8 +148,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
@@ -170,8 +170,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
@@ -190,8 +190,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
@@ -210,8 +210,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
@@ -270,8 +270,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
@@ -301,8 +301,8 @@ class CryptoBot:
 				success = response_json.get('success', False)
 				if success:
 					self.errors = 0
+					self.update_level(level=int(response_json['data']['hero']['level']))
 					self.balance = int(response_json['data']['hero']['money'])
-					self.level = int(response_json['data']['hero']['level'])
 					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
 					log.success(f"{self.session_name} | Earned money: +{earned_money} | Energy left: {energy}")
@@ -387,8 +387,8 @@ class CryptoBot:
 					success = response_json.get('success', False)
 					if success:
 						self.errors = 0
+						self.update_level(level=int(response_json['data']['hero']['level']))
 						self.balance = int(response_json['data']['hero']['money'])
-						self.level = int(response_json['data']['hero']['level'])
 						self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					
 					await asyncio.sleep(random.randint(1, 2))
@@ -490,8 +490,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				for fnd in response_json['data']['funds']:
 					if fnd['fundKey'] == fund:
@@ -514,8 +514,8 @@ class CryptoBot:
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
+				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
-				self.level = int(response_json['data']['hero']['level'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return response_json
 			else: return None
@@ -545,6 +545,11 @@ class CryptoBot:
 			result = value / 1e12
 			return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}T"
 
+	def update_level(self, level: int) -> None:
+		if level > self.level:
+			log.success(f"{self.session_name} | You have reached a new level: {level}")
+			self.level = level
+	
 	async def check_proxy(self, proxy: Proxy) -> None:
 		try:
 			response = await self.http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
@@ -578,7 +583,10 @@ class CryptoBot:
 							full_profile = await self.get_profile(full=True)
 							if self.user_id is None: self.user_id = int(full_profile['data']['profile']['id'])
 							self.balance = int(full_profile['data']['hero']['money'])
-							self.level = int(full_profile['data']['hero']['level'])
+							if not hasattr(self, 'level'):
+								self.level = int(full_profile['data']['hero']['level'])
+							else:
+								self.update_level(level=int(full_profile['data']['hero']['level']))
 							self.mph = int(full_profile['data']['hero']['moneyPerHour'])
 							offline_bonus = int(full_profile['data']['hero']['offlineBonus'])
 							if offline_bonus > 0:
@@ -589,8 +597,8 @@ class CryptoBot:
 						else: continue
 						
 					profile = await self.get_profile(full=False)
+					self.update_level(level=int(profile['data']['hero']['level']))
 					self.balance = int(profile['data']['hero']['money'])
-					self.level = int(profile['data']['hero']['level'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
 								f"Balance: {self.number_short(self.balance)} | "
@@ -709,8 +717,8 @@ class CryptoBot:
 									await self.invest(fund=fund, amount=self.calculate_bet())
 					
 					profile = await self.get_profile(full=False)
+					self.update_level(level=int(profile['data']['hero']['level']))
 					self.balance = int(profile['data']['hero']['money'])
-					self.level = int(profile['data']['hero']['level'])
 					self.mph = int(profile['data']['hero']['moneyPerHour'])
 					log.info(f"{self.session_name} | Level: {self.level} | "
 								f"Balance: {self.number_short(self.balance)} | "
