@@ -12,7 +12,7 @@ from pyrogram.raw.functions.messages import RequestWebView
 
 from bot.utils.logger import log
 from bot.utils.settings import config
-from bot.utils.functions import calculate_bet, calculate_best_skill, improve_allowed, number_short
+from bot.utils.functions import calculate_bet, calculate_best_skill, improve_allowed, number_short, calculate_tap_power
 from .headers import headers
 
 class CryptoBot:
@@ -279,18 +279,20 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
 			return False
 	
-	async def perform_taps(self, per_tap: int, energy: int) -> None:
+	async def perform_taps(self, per_tap: int, energy: int, bonus_chance: int, bonus_mult: int) -> None:
 		url = self.api_url + '/hero/action/tap'
 		log.info(f"{self.session_name} | Taps started")
-		while True:
+		last = False
+		while not last:
 			taps_per_second = random.randint(*config.TAPS_PER_SECOND)
 			seconds = random.randint(4, 6)
-			earned_money = per_tap * taps_per_second * seconds
-			energy_spent = math.ceil(earned_money / 2)
-			energy -= energy_spent
-			if energy < 0:
-				log.warning(f"{self.session_name} | Taps stopped (not enough energy)")
-				break
+			taps_sum = taps_per_second * seconds
+			earned_money = 0
+			for i in range(1, taps_sum + 1):
+				tap_power = calculate_tap_power(per_tap, energy, bonus_chance, bonus_mult)
+				earned_money += tap_power
+				energy -= 0.7 * tap_power # cheat
+			if energy < per_tap: last = True
 			await asyncio.sleep(delay=seconds)
 			try:
 				json_data = {'data': {'data':{'task': {'amount': earned_money, 'currentEnergy': energy}}, 'seconds': seconds}}
@@ -306,6 +308,7 @@ class CryptoBot:
 					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
 					log.success(f"{self.session_name} | Earned money: +{number_short(value=earned_money)} | Energy left: {energy}")
+					if last: log.warning(f"{self.session_name} | Taps stopped (not enough energy)")
 			except Exception as error:
 				log.error(f"{self.session_name} | Taps error: {str(error)}")
 				self.errors += 1
@@ -567,8 +570,10 @@ class CryptoBot:
 						per_tap = profile['data']['hero']['earns']['task']['moneyPerTap']
 						max_energy = profile['data']['hero']['earns']['task']['limit']
 						energy = profile['data']['hero']['earns']['task']['energy']
+						bonus_chance = profile['data']['hero']['earns']['task']['bonusChance']
+						bonus_mult = profile['data']['hero']['earns']['task']['bonusMultiplier']
 						if energy == max_energy:
-							await self.perform_taps(per_tap=per_tap, energy=energy)
+							await self.perform_taps(per_tap=per_tap, energy=energy, bonus_chance=bonus_chance, bonus_mult=bonus_mult)
 					
 					if config.PVP_ENABLED:
 						if self.dbs:

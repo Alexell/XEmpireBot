@@ -1,3 +1,4 @@
+import random
 from time import time
 from datetime import datetime, timezone
 from typing import Any, Dict
@@ -264,3 +265,12 @@ def number_short(value: int, round_value: bool = False) -> str:
 	if abs(value) >= 1e12:
 		result = value / 1e12
 		return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}T"
+
+def calculate_tap_power(per_tap : int, energy: int, bonus_chance: int, bonus_mult: int):
+	if per_tap < energy:
+		gain = False
+		if per_tap * bonus_mult <= energy:
+			gain = random.randint(0, 100) <= bonus_chance
+			per_tap = per_tap * bonus_mult if gain else per_tap
+		return per_tap
+	return 0
