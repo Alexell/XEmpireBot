@@ -32,7 +32,7 @@
 | **PVP_UPGRADE_LEAGUE**  | Upgrade league if league specified in PVP_LEAGUE is unavailable (True / False)     |
 | **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                             |
 | **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                         |
-| **SKILLS_COUNT**        | Number of skills improved per cycle (e.g. 5)                                       |
+| **SKILLS_COUNT**        | Number of profit skills improved per cycle (e.g. 10)                               |
 | **MINING_SKILLS_LEVEL** | Max level of mining skill improve (e.g. 10)                                        |
 | **PROTECTED_BALANCE**   | Balance protected from spending on PvP, investments and skills (e.g. 100000000)    |
 | **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                   |
@@ -45,13 +45,13 @@ You can obtain the **API_ID** and **API_HASH** after creating an application at 
 
 The answer to the **daily quiz** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.pro/crypto/x-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. When investing, the bet amount will always be the maximum, as the profit is guaranteed. If there is not enough money for the maximum bet, the bet amount will be reduced.
 
-Each cycle, the bot will upgrade as many profit skills as specified in the **SKILLS_COUNT** parameter. The default is 10. The most beneficial skills will be chosen first. Each cycle, the bot will improve each mining skill by 1 level until the level reaches the value specified in **MINING_SKILLS_LEVEL** parameter. Set it to 0 if you do not need to improve mining skills.
+Each cycle, the bot will upgrade as many profit skills as specified in the **SKILLS_COUNT** parameter. The default is 10. The most beneficial skills will be chosen first. If possible, the bot will improve mining skills by 1 level each cycle until the level reaches the value specified in **MINING_SKILLS_LEVEL** parameter. Set it to 0 if you do not need to improve mining skills.
 
 If you want to protect a certain amount of money in the balance, set the desired amount in the **PROTECTED_BALANCE** parameter. The bot will not allow the balance to fall below this amount.
 
 ## Quick start
 ### Windows
-1. Ensure you have **Python 3.10** or a newer version installed.
+1. Ensure you have **Python 3.10** installed.
 2. Use `INSTALL.bat` to install, then specify your API_ID and API_HASH in the .env file.
 3. Use `START.bat` to launch the bot (or in the console: `python main.py`).
 
@@ -94,7 +94,7 @@ $ cp .env-example .env
 $ nano .env # specify your API_ID and API_HASH, the rest can be left as default
 $ python3 main.py
 
-# Windows (first, install Python 3.10 or a newer version)
+# Windows (first, install Python 3.10)
 > python -m venv venv
 > venv\Scripts\activate
 > pip install -r requirements.txt
