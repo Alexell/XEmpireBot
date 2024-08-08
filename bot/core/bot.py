@@ -12,7 +12,7 @@ from pyrogram.raw.functions.messages import RequestWebView
 
 from bot.utils.logger import log
 from bot.utils.settings import config
-from bot.utils.functions import calculate_bet, calculate_best_skill, number_short
+from bot.utils.functions import calculate_bet, calculate_best_skill, improve_allowed, number_short
 from .headers import headers
 
 class CryptoBot:
@@ -652,7 +652,26 @@ class CryptoBot:
 								f"Balance: {number_short(value=self.balance)} | "
 								f"Profit per hour: +{number_short(value=self.mph)}")
 					
-					# improve skills
+					# improve mining skills (+1 level to each per cycle)
+					if config.MINING_SKILLS_LEVEL > 0:
+						my_skills = full_profile['data']['skills']
+						friends_count = int(full_profile['data']['profile']['friends'])
+						for skill in self.dbs['dbSkills']:
+							if skill['category'] != 'mining': continue
+							if skill['key'] in my_skills:
+								if my_skills[skill['key']]['level'] >= config.MINING_SKILLS_LEVEL: continue
+							allowed_skill = improve_allowed(skill, my_skills, self.level, self.balance, friends_count)
+							if allowed_skill is not None:
+								if self.balance - allowed_skill['price'] >= config.PROTECTED_BALANCE:
+									improve_data = await self.improve_skill(skill=allowed_skill['key'])
+									if improve_data is not None:
+										log.success(f"{self.session_name} | Mining skill {allowed_skill['key']} improved to level {allowed_skill['newlevel']}")
+										await asyncio.sleep(random.randint(2, 5))
+									else:
+										break
+								
+					
+					# improve profit skills
 					if config.SKILLS_COUNT > 0:
 						improved_skills = 0
 						improve_data = None

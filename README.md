@@ -33,6 +33,7 @@
 | **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                             |
 | **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                         |
 | **SKILLS_COUNT**        | Number of skills improved per cycle (e.g. 5)                                       |
+| **MINING_SKILLS_LEVEL** | Max level of mining skill improve (e.g. 10)                                        |
 | **PROTECTED_BALANCE**   | Balance protected from spending on PvP, investments and skills (e.g. 100000000)    |
 | **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                   |
 | **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                        |
@@ -44,7 +45,7 @@ You can obtain the **API_ID** and **API_HASH** after creating an application at 
 
 The answer to the **daily quiz** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.pro/crypto/x-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. When investing, the bet amount will always be the maximum, as the profit is guaranteed. If there is not enough money for the maximum bet, the bet amount will be reduced.
 
-Each cycle, the bot will upgrade as many skills as specified in the **SKILLS_COUNT** parameter. The default is 5. The most beneficial skills will be chosen first.
+Each cycle, the bot will upgrade as many profit skills as specified in the **SKILLS_COUNT** parameter. The default is 10. The most beneficial skills will be chosen first. Each cycle, the bot will improve each mining skill by 1 level until the level reaches the value specified in **MINING_SKILLS_LEVEL** parameter. Set it to 0 if you do not need to improve mining skills.
 
 If you want to protect a certain amount of money in the balance, set the desired amount in the **PROTECTED_BALANCE** parameter. The bot will not allow the balance to fall below this amount.
 

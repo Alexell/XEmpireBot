@@ -148,6 +148,48 @@ def calculate_best_skill(skills: list, profile: Dict[str, Any], level: int, bala
 	if len(best_skill) > 0: return best_skill
 	else: return None
 
+def improve_allowed(skill: Dict[str, Any], my_skills: list | None, level: int, balance: int, friends: int) -> bool:
+	allowed = False
+	for my_skill, my_limit in my_skills.items():
+		if type(my_limit["finishUpgradeDate"]) is str:
+			my_skills[my_skill]["finishUpgradeDate"] = datetime.strptime(my_limit["finishUpgradeDate"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
+	
+	my_skill = None
+	if skill['key'] in my_skills:
+		my_skill = my_skills[skill['key']]
+		if skill['maxLevel'] <= my_skill['level']: return None
+		if type(my_skill['finishUpgradeDate']) is str:
+			my_skill["finishUpgradeDate"] = datetime.strptime(my_skill['finishUpgradeDate'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc).timestamp()
+			if my_skill['finishUpgradeDate'] > time(): return None
+		skill_price = get_price(skill, my_skill['level'] + 1)
+	else:
+		skill_price = get_price(skill, 1)
+	
+	if balance > skill_price:
+		if not skill['levels']: allowed = True
+		else:
+			if my_skill is not None:
+				matched_skill_limit = None
+				for skill_limit in skill['levels']:
+					if my_skill['level'] == skill_limit['level'] - 1:
+						matched_skill_limit = skill_limit
+						break
+			else:
+				matched_skill_limit = skill['levels'][0]
+			if matched_skill_limit is None: allowed = True
+			elif matched_skill_limit['requiredHeroLevel'] <= level and matched_skill_limit['requiredFriends'] <= friends:
+				if not matched_skill_limit['requiredSkills']: allowed = True
+				else:
+					for req_skill, req_level in matched_skill_limit['requiredSkills'].items():
+						if my_skills.get(req_skill, {}).get('level', 0) >= req_level: allowed = True
+	
+	if allowed:
+		skill['price'] = skill_price
+		skill['newlevel'] = my_skills.get(skill['key'], {}).get('level', 0) + 1
+		return skill
+	else:
+		return None
+	
 
 ########## MATH ##########
 

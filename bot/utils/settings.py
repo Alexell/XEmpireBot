@@ -23,7 +23,8 @@ class Settings(BaseSettings):
 	PVP_UPGRADE_LEAGUE: bool = False
 	PVP_STRATEGY: str = 'random'
 	PVP_COUNT: int = 10
-	SKILLS_COUNT: int = 5
+	SKILLS_COUNT: int = 10
+	MINING_SKILLS_LEVEL: int = 10
 	PROTECTED_BALANCE: int = 0
 
 	SLEEP_BETWEEN_START: list[int] = [20, 360]
