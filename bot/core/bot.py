@@ -728,7 +728,7 @@ class CryptoBot:
 						improved_skills = 0
 						improve_data = None
 						while improved_skills < config.SKILLS_COUNT:
-							skill = calculate_best_skill(skills=self.dbs['dbSkills'], profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
+							skill = calculate_best_skill(skills=self.dbs['dbSkills'], ignored_skills=config.IGNORED_SKILLS, profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
 							if skill is not None:
 								if self.balance - skill['price'] < config.PROTECTED_BALANCE:
 									log.warning(f"{self.session_name} | Skill improvement stopped (balance protection)")
