@@ -1,7 +1,6 @@
 import random
 from time import time
 from datetime import datetime, timezone
-from typing import Any, Dict
 
 ########## SKILLS ##########
 
@@ -91,83 +90,47 @@ def fn_payback(e, t):
 	return s[e]
 
 # main function for calculating the most profitable skill
-def calculate_best_skill(skills: list, profile: Dict[str, Any], level: int, balance: int, improve: Dict[str, Any] | None) -> Dict[str, Any] | None:
-	friends = profile["data"]["profile"]["friends"]
+def calculate_best_skill(skills: list, profile: dict, level: int, balance: int, improve: dict | list | None) -> dict | None:
+	friends = int(profile["data"]["profile"]["friends"] or 0)
 	if improve is not None:
 		my_skills = improve["data"]["skill"]
 	else:
 		my_skills = profile["data"]["skills"]
 	
-	for my_skill, my_limit in my_skills.items():
-		if type(my_limit["finishUpgradeDate"]) is str:
-			my_skills[my_skill]["finishUpgradeDate"] = datetime.strptime(my_limit["finishUpgradeDate"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
+	if isinstance(my_skills, dict):
+		for my_skill, my_limit in my_skills.items():
+			if type(my_limit["finishUpgradeDate"]) is str:
+				my_skills[my_skill]["finishUpgradeDate"] = datetime.strptime(my_limit["finishUpgradeDate"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
 	
-	qualified_skills = []
+	possible_skills = []
 	for skill in skills:
-		qualified = False
-		if skill['key'] in my_skills: # skill found, check for improve
-			my_skill = my_skills[skill['key']]
-			skill_price = get_price(skill, my_skill['level'] + 1)
-			current_profit = get_profit(skill, my_skill['level'])
-			next_profit = get_profit(skill, my_skill['level'] + 1)
-			skill_profit = next_profit - current_profit
-			if skill['maxLevel'] <= my_skill['level']: continue
-			if (0 if my_skill['finishUpgradeDate'] is None else my_skill['finishUpgradeDate']) < time() and balance > skill_price:
-				if not skill['levels']: qualified = True
-				else:
-					matched_skill_limit = None
-					for skill_limit in skill['levels']:
-						if my_skill['level'] == skill_limit['level'] - 1:
-							matched_skill_limit = skill_limit
-							break
-					if matched_skill_limit is None: qualified = True
-					elif matched_skill_limit['requiredHeroLevel'] <= level and matched_skill_limit['requiredFriends'] <= friends:
-						if not matched_skill_limit['requiredSkills']: qualified = True
-						else:
-							for req_skill, req_level in matched_skill_limit['requiredSkills'].items():
-								if my_skills.get(req_skill, {}).get('level', 0) >= req_level: qualified = True
-		else: # skill not found, check for buy
-			skill_price = get_price(skill, 1)
-			skill_profit = get_profit(skill, 1)
-			if balance > skill_price and not skill['levels']: qualified = True
-			else:
-				skill_limit = skill['levels'][0]
-				if skill_limit['requiredHeroLevel'] <= level and skill_limit['requiredFriends'] <= friends:
-					if not skill_limit['requiredSkills']: qualified = True
-					else:
-						for req_skill, req_level in skill_limit['requiredSkills'].items():
-							if my_skills.get(req_skill, {}).get("level", 0) >= req_level: qualified = True
-
-		if qualified:
-			skill['ratio'] = skill_profit / skill_price
-			skill['price'] = skill_price
-			skill['profit'] = skill_profit
-			skill['newlevel'] = my_skills.get(skill['key'], {}).get('level', 0) + 1 # new level for improve or 1 level for buy
-			qualified_skills.append(skill)
+		possible_skill = improve_possible(skill, my_skills, level, balance, friends)
+		if possible_skill is not None:
+			possible_skills.append(possible_skill)
 	
-	best_skill = sorted(qualified_skills, key=lambda x: x["ratio"])[-1]
+	best_skill = sorted(possible_skills, key=lambda x: x["ratio"])[-1]
 	if len(best_skill) > 0: return best_skill
 	else: return None
 
-def improve_allowed(skill: Dict[str, Any], my_skills: list | None, level: int, balance: int, friends: int) -> bool:
-	allowed = False
-	for my_skill, my_limit in my_skills.items():
-		if type(my_limit["finishUpgradeDate"]) is str:
-			my_skills[my_skill]["finishUpgradeDate"] = datetime.strptime(my_limit["finishUpgradeDate"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
-	
+def improve_possible(skill: dict, my_skills: dict | list, level: int, balance: int, friends: int) -> dict | None:
+	possible = False
 	my_skill = None
-	if skill['key'] in my_skills:
+	if isinstance(my_skills, dict) and skill['key'] in my_skills:
 		my_skill = my_skills[skill['key']]
 		if skill['maxLevel'] <= my_skill['level']: return None
 		if type(my_skill['finishUpgradeDate']) is str:
 			my_skill["finishUpgradeDate"] = datetime.strptime(my_skill['finishUpgradeDate'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc).timestamp()
-			if my_skill['finishUpgradeDate'] > time(): return None
+		if my_skill['finishUpgradeDate'] is int and my_skill['finishUpgradeDate'] > time(): return None
 		skill_price = get_price(skill, my_skill['level'] + 1)
+		current_profit = get_profit(skill, my_skill['level'])
+		next_profit = get_profit(skill, my_skill['level'] + 1)
+		skill_profit = next_profit - current_profit
 	else:
 		skill_price = get_price(skill, 1)
+		skill_profit = get_profit(skill, 1)
 	
 	if balance > skill_price:
-		if not skill['levels']: allowed = True
+		if not skill['levels']: possible = True
 		else:
 			if my_skill is not None:
 				matched_skill_limit = None
@@ -177,16 +140,22 @@ def improve_allowed(skill: Dict[str, Any], my_skills: list | None, level: int, b
 						break
 			else:
 				matched_skill_limit = skill['levels'][0]
-			if matched_skill_limit is None: allowed = True
+			if matched_skill_limit is None: possible = True
 			elif matched_skill_limit['requiredHeroLevel'] <= level and matched_skill_limit['requiredFriends'] <= friends:
-				if not matched_skill_limit['requiredSkills']: allowed = True
+				if not matched_skill_limit['requiredSkills']: possible = True
 				else:
 					for req_skill, req_level in matched_skill_limit['requiredSkills'].items():
-						if my_skills.get(req_skill, {}).get('level', 0) >= req_level: allowed = True
+						if isinstance(my_skills, dict):
+							if my_skills.get(req_skill, {}).get('level', 0) >= req_level: possible = True
 	
-	if allowed:
+	if possible:
+		skill['ratio'] = skill_profit / skill_price
 		skill['price'] = skill_price
-		skill['newlevel'] = my_skills.get(skill['key'], {}).get('level', 0) + 1
+		skill['profit'] = skill_profit
+		if isinstance(my_skills, dict):
+			skill['newlevel'] = my_skills.get(skill['key'], {}).get('level', 0) + 1 # new level for improve or 1 level for buy
+		else:
+			skill['newlevel'] = 1 # 1 level for buy
 		return skill
 	else:
 		return None
