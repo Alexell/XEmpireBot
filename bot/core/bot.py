@@ -1,4 +1,4 @@
-import asyncio, aiohttp, random, math, json, hashlib
+import asyncio, aiohttp, random, math, json, hashlib, traceback
 from time import time
 from zoneinfo import ZoneInfo
 from datetime import datetime
@@ -75,7 +75,7 @@ class CryptoBot:
 			raise error
 
 		except Exception as error:
-			log.error(f"{self.session_name} | Authorization error: {error}")
+			log.error(f"{self.session_name} | Authorization error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 
 	async def login(self, json_data: Dict[str, Any]) -> bool:
@@ -86,12 +86,15 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Login response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success: return True
 			else: return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Login error: {error}")
+			log.error(f"{self.session_name} | Login error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			self.errors += 1
 			await asyncio.sleep(delay=3)
 			return False
@@ -112,13 +115,16 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Database response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success: return response_json['data']
 			else: return {}
 		except Exception as error:
 			self.errors += 1
-			log.error(f"{self.session_name} | Database error: {error}")
+			log.error(f"{self.session_name} | Database error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return {}
 
@@ -129,11 +135,14 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Profile data response:\n{response_text}")
+			response_json = json.loads(response_text)
 			return response_json
 		except Exception as error:
 			self.errors += 1
-			log.error(f"{self.session_name} | Profile data error: {error}")
+			log.error(f"{self.session_name} | Profile data error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return {}
 
@@ -144,7 +153,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Offline bonus response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -155,7 +167,7 @@ class CryptoBot:
 			else: return False
 		except Exception as error:
 			self.errors += 1
-			log.error(f"{self.session_name} | Offline bonus error: {error}")
+			log.error(f"{self.session_name} | Offline bonus error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return False
 
@@ -166,7 +178,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Daily reward response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -176,7 +191,7 @@ class CryptoBot:
 				return True
 			else: return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Daily reward error: {str(error)}")
+			log.error(f"{self.session_name} | Daily reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 			
 	async def quest_reward(self, quest: str, code:str = None) -> bool:
@@ -186,7 +201,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Quest reward response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -196,7 +214,7 @@ class CryptoBot:
 				return True
 			else: return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Quest reward error: {str(error)}")
+			log.error(f"{self.session_name} | Quest reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
 	async def daily_quest_reward(self, quest: str, code:str = None) -> bool:
@@ -206,7 +224,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Daily quest reward response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -216,7 +237,7 @@ class CryptoBot:
 				return True
 			else: return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Daily quest reward error: {str(error)}")
+			log.error(f"{self.session_name} | Daily quest reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
 	async def daily_quests(self) -> None:
@@ -226,7 +247,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Daily quests response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				for name, quest in response_json['data'].items():
@@ -239,7 +263,7 @@ class CryptoBot:
 						if await self.daily_quest_reward(quest=name):
 							log.success(f"{self.session_name} | Reward for daily quest {name} claimed")
 		except Exception as error:
-			log.error(f"{self.session_name} | Daily quests error: {str(error)}")
+			log.error(f"{self.session_name} | Daily quests error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
 	async def solve_rebus(self, quest: str, code:str) -> bool:
@@ -249,14 +273,17 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Rebus response:\n{response_text}")
+			response_json = json.loads(response_text)
 			if response_json.get('success', False) and response_json['data'].get('result', False):
 				await asyncio.sleep(delay=2)
 				if await self.quest_reward(quest=quest, code=code):
 					return True
 			return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Rebus error: {str(error)}")
+			log.error(f"{self.session_name} | Rebus error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
 	async def friend_reward(self, friend: int) -> bool:
@@ -266,7 +293,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Friend reward response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -276,7 +306,7 @@ class CryptoBot:
 				return True
 			else: return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
+			log.error(f"{self.session_name} | Friend reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
 	async def perform_taps(self, per_tap: int, energy: int, bonus_chance: int, bonus_mult: int) -> None:
@@ -299,7 +329,10 @@ class CryptoBot:
 				await self.set_sign_headers(data=json_data)
 				response = await self.http_client.post(url, json=json_data)
 				response.raise_for_status()
-				response_json = await response.json()
+				response_text = await response.text()
+				if config.DEBUG_MODE:
+					log.debug(f"{self.session_name} | Taps response:\n{response_text}")
+				response_json = json.loads(response_text)
 				success = response_json.get('success', False)
 				if success:
 					self.errors = 0
@@ -310,7 +343,7 @@ class CryptoBot:
 					log.success(f"{self.session_name} | Earned money: +{number_short(value=earned_money)} | Energy left: {energy}")
 					if last: log.warning(f"{self.session_name} | Taps stopped (not enough energy)")
 			except Exception as error:
-				log.error(f"{self.session_name} | Taps error: {str(error)}")
+				log.error(f"{self.session_name} | Taps error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 				self.errors += 1
 				break
 
@@ -345,7 +378,10 @@ class CryptoBot:
 				await self.set_sign_headers(data=json_data)
 				response = await self.http_client.post(url_fight, json=json_data)
 				response.raise_for_status()
-				response_json = await response.json()
+				response_text = await response.text()
+				if config.DEBUG_MODE:
+					log.debug(f"{self.session_name} | PvP search response:\n{response_text}")
+				response_json = json.loads(response_text)
 				success = response_json.get('success', False)
 				if success:
 					self.errors = 0
@@ -386,7 +422,10 @@ class CryptoBot:
 					await self.set_sign_headers(data=json_data)
 					response = await self.http_client.post(url_claim, json=json_data)
 					response.raise_for_status()
-					response_json = await response.json()
+					response_text = await response.text()
+					if config.DEBUG_MODE:
+						log.debug(f"{self.session_name} | PvP claim response:\n{response_text}")
+					response_json = json.loads(response_text)
 					success = response_json.get('success', False)
 					if success:
 						self.errors = 0
@@ -397,7 +436,7 @@ class CryptoBot:
 					await asyncio.sleep(random.randint(1, 2))
 			
 			except Exception as error:
-				log.error(f"{self.session_name} | PvP error: {str(error)}")
+				log.error(f"{self.session_name} | PvP error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 				self.errors += 1
 				await asyncio.sleep(random.randint(10, 30))
 		money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
@@ -418,11 +457,14 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Funds response:\n{response_text}")
+			response_json = json.loads(response_text)
 			return response_json['data']
 		except Exception as error:
 			self.errors += 1
-			log.error(f"{self.session_name} | Funds error: {error}")
+			log.error(f"{self.session_name} | Funds error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return {}
 
@@ -439,7 +481,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Invest response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -454,7 +499,7 @@ class CryptoBot:
 						break
 		except Exception as error:
 			self.errors += 1
-			log.error(f"{self.session_name} | Invest error: {str(error)}")
+			log.error(f"{self.session_name} | Invest error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 
 	async def improve_skill(self, skill: str) -> Dict[str, Any] | None:
 		url = self.api_url + '/skills/improve'
@@ -463,7 +508,10 @@ class CryptoBot:
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
-			response_json = await response.json()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Improve skill response:\n{response_text}")
+			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
 				self.errors = 0
@@ -473,7 +521,7 @@ class CryptoBot:
 				return response_json
 			else: return None
 		except Exception as error:
-			log.error(f"{self.session_name} | Friend reward error: {str(error)}")
+			log.error(f"{self.session_name} | Improve skill error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return None
 
 	def update_level(self, level: int) -> None:
@@ -705,7 +753,7 @@ class CryptoBot:
 				except RuntimeError as error:
 					raise error
 				except Exception as error:
-					log.error(f"{self.session_name} | Unknown error: {error}")
+					log.error(f"{self.session_name} | Unknown error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 					await asyncio.sleep(delay=3)
 
 async def run_bot(tg_client: Client, proxy: str | None):

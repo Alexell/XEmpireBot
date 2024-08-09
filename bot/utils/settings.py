@@ -30,6 +30,7 @@ class Settings(BaseSettings):
 	SLEEP_BETWEEN_START: list[int] = [20, 360]
 	ERRORS_BEFORE_STOP: int = 3
 	USE_PROXY_FROM_FILE: bool = False
+	DEBUG_MODE: bool = False
 
 try:
 	config = Settings()
