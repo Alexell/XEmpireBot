@@ -20,9 +20,6 @@ class CryptoBot:
 		self.tg_client = tg_client
 		self.user_id = None
 		self.api_url = 'https://api.xempire.io'
-		self.need_quiz = False
-		self.need_rebus = False
-		self.rebus_key = ''
 		self.taps_limit = False
 		self.taps_limit_date = ''
 		self.errors = 0
@@ -256,10 +253,6 @@ class CryptoBot:
 			if success:
 				for name, quest in response_json['data'].items():
 					if 'youtube' in name: continue
-					if 'quiz' in name:
-						if quest['isRewarded'] == False:
-							self.need_quiz = True
-						continue
 					if quest['isComplete'] == True and quest['isRewarded'] == False:
 						if await self.daily_quest_reward(quest=name):
 							log.success(f"{self.session_name} | Reward for daily quest {name} claimed")
@@ -267,7 +260,7 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Daily quests error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
-	async def solve_rebus(self, quest: str, code:str) -> bool:
+	async def complete_quest(self, quest: str, code:str) -> bool:
 		url = self.api_url + '/quests/check'
 		try:
 			json_data = {'data': [quest, code]}
@@ -276,7 +269,7 @@ class CryptoBot:
 			response.raise_for_status()
 			response_text = await response.text()
 			if config.DEBUG_MODE:
-				log.debug(f"{self.session_name} | Rebus response:\n{response_text}")
+				log.debug(f"{self.session_name} | Check quest response:\n{response_text}")
 			response_json = json.loads(response_text)
 			if response_json.get('success', False) and response_json['data'].get('result', False):
 				await asyncio.sleep(delay=2)
@@ -284,7 +277,7 @@ class CryptoBot:
 					return True
 			return False
 		except Exception as error:
-			log.error(f"{self.session_name} | Rebus error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			log.error(f"{self.session_name} | Complete quest error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
 	async def friend_reward(self, friend: int) -> bool:
@@ -687,38 +680,54 @@ class CryptoBot:
 						else:
 							log.warning(f"{self.session_name} | Database is missing. PvP negotiations will be skipped this time.")
 					
-					for quest in self.dbs['dbQuests']:
-						if 'rebus' in quest['key']:
-							self.rebus_key = quest['key']
-							self.rebus_answer = quest['checkData']
-							break
-					self.need_rebus = True
-					for quest in full_profile['data']['quests']:
-						if self.rebus_key in quest['key']:
-							self.need_rebus = False
-							break
-					
-					helper = await self.get_helper()
 					cur_time_gmt = datetime.now(self.gmt_timezone)
 					cur_time_gmt_s = cur_time_gmt.strftime('%Y-%m-%d')
 					new_day_gmt = cur_time_gmt.replace(hour=7, minute=0, second=0, microsecond=0)
-					
+
 					# Reset taps limit
 					if cur_time_gmt >= new_day_gmt and cur_time_gmt_s != self.taps_limit_date:
 						self.taps_limit = False
 						self.taps_limit_date = ''
 					
-					# Daily quiz, rebus and combo invest with external data
+					# Daily quiz and rebus
+					quiz_key = ''
+					quiz_answer = ''
+					quiz_req_level = 0
+					rebus_key = ''
+					rebus_answer = ''
+					rebus_req_level = 0
+					for quest in self.dbs['dbQuests']:
+						if quest['isArchived']: continue
+						date_start = datetime.strptime(quest['dateStart'], '%Y-%m-%d %H:%M:%S') if quest.get('dateStart') else None
+						date_end = datetime.strptime(quest['dateEnd'], '%Y-%m-%d %H:%M:%S') if quest.get('dateEnd') else None
+						if date_start: date_start = date_start.replace(tzinfo=self.gmt_timezone)
+						if date_end: date_end = date_end.replace(tzinfo=self.gmt_timezone)
+						if date_start and date_end and not (date_start <= cur_time_gmt <= date_end): continue
+						if 'riddle' in quest['key']:
+							quiz_key = quest['key']
+							quiz_answer = quest['checkData']
+							quiz_req_level = int(quest['requiredLevel'] or 0)
+						if 'rebus' in quest['key']:
+							rebus_key = quest['key']
+							rebus_answer = quest['checkData']
+							rebus_req_level = int(quest['requiredLevel']  or 0)
+					
+					need_quiz = bool(quiz_key and quiz_answer) and not any(quiz_key in quest['key'] for quest in full_profile['data']['quests'])
+					need_rebus = bool(rebus_key and rebus_answer) and not any(rebus_key in quest['key'] for quest in full_profile['data']['quests'])
+					
+					if need_quiz and self.level >= quiz_req_level:
+						if await self.complete_quest(quest=quiz_key, code=quiz_answer):
+							need_quiz = False
+							log.success(f"{self.session_name} | Reward for daily quiz claimed")
+					if need_rebus and self.level >= rebus_req_level:
+						if await self.complete_quest(quest=rebus_key, code=rebus_answer):
+							need_rebus = False
+							log.success(f"{self.session_name} | Reward for daily rebus claimed")
+					
+					# Invest with external data for combo
+					helper = await self.get_helper()
 					if cur_time_gmt >= new_day_gmt and cur_time_gmt_s in helper:
 						helper = helper[cur_time_gmt_s]
-						if 'quiz' in helper and self.need_quiz:
-							if await self.daily_quest_reward(quest='quiz', code=helper['quiz']):
-								self.need_quiz = False
-								log.success(f"{self.session_name} | Reward for daily quiz claimed")
-						if self.need_rebus:
-							if await self.solve_rebus(quest=self.rebus_key, code=self.rebus_answer):
-								self.need_rebus = False
-								log.success(f"{self.session_name} | Reward for daily rebus claimed")
 						if 'funds' in helper:
 							current_invest = await self.get_funds_info()
 							if 'funds' in current_invest and not current_invest['funds']:
