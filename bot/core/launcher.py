@@ -17,7 +17,7 @@ Select an action:
 def get_session_names() -> list[str]:
 	session_path = Path('sessions')
 	session_files = session_path.glob('*.session')
-	session_names = [file.stem for file in session_files]
+	session_names = sorted([file.stem for file in session_files])
 	return session_names
 
 async def register_sessions() -> None:
@@ -40,7 +40,7 @@ async def register_sessions() -> None:
 def get_proxies() -> list[Proxy]:
 	if config.USE_PROXY_FROM_FILE:
 		with open(file='proxies.txt', encoding='utf-8-sig') as file:
-			proxies = [Proxy.from_str(proxy=row.strip()).as_url for row in file if row.strip()]
+			proxies = sorted([Proxy.from_str(proxy=row.strip()).as_url for row in file if row.strip()])
 	else:
 		proxies = []
 
