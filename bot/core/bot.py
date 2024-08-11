@@ -791,18 +791,16 @@ class CryptoBot:
 						improve_data = None
 						while improved_skills < config.SKILLS_COUNT:
 							skill = calculate_best_skill(skills=self.dbs['dbSkills'], ignored_skills=config.IGNORED_SKILLS, profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
-							if skill is not None:
-								if self.balance - skill['price'] < config.PROTECTED_BALANCE:
-									log.warning(f"{self.session_name} | Skill improvement stopped (balance protection)")
-									break
-								improve_data = await self.improve_skill(skill=skill['key'])
-								if improve_data is not None:
-									improved_skills += 1
-									log.success(f"{self.session_name} | Skill {skill['key']} improved to level {skill['newlevel']}")
-									await asyncio.sleep(random.randint(2, 5))
-								else:
-									break
-									
+							if skill is None: break
+							if self.balance - skill['price'] < config.PROTECTED_BALANCE:
+								log.warning(f"{self.session_name} | Skill improvement stopped (balance protection)")
+								break
+							improve_data = await self.improve_skill(skill=skill['key'])
+							if improve_data is None: break
+							improved_skills += 1
+							log.success(f"{self.session_name} | Skill {skill['key']} improved to level {skill['newlevel']}")
+							await asyncio.sleep(random.randint(2, 5))
+					
 					log.info(f"{self.session_name} | Level: {self.level} | "
 								f"Balance: {number_short(value=self.balance)} | "
 								f"Profit per hour: +{number_short(value=self.mph)}")
