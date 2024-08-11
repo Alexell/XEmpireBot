@@ -24,7 +24,7 @@ async def register_sessions() -> None:
 	session_name = input('\nEnter the session name (press Enter to exit): ')
 	if not session_name: return None
 	
-	if not os.path.exists(path='sessions'): os.mkdir(path='sessions')
+	if not os.path.exists('sessions'): os.mkdir('sessions')
 
 	session = Client(
 		name=session_name,

@@ -52,12 +52,20 @@ If you want to protect a certain amount of money in the balance, set the desired
 
 ## Quick start
 ### Windows
-1. Ensure you have **Python 3.10** installed.
+1. Ensure you have **Python 3.10** or a later version installed.
+
+**Attention:** If you are using **Python 3.12**, before proceeding to the next step, you need to either remove the `TgCrypto` line from `requirements.txt` (TgCrypto is not critical) or install the [required software](https://visualstudio.microsoft.com/visual-cpp-build-tools/) for automatic compilation of this package during installation.
+
 2. Use `INSTALL.bat` to install, then specify your API_ID and API_HASH in the .env file.
 3. Use `START.bat` to launch the bot (or in the console: `python main.py`).
 
 ### Linux
 1. Clone the repository: `git clone https://github.com/Alexell/XEmpireBot.git && cd XEmpireBot`
+
+**Attention:** If you are using **Python 3.12**, before proceeding to the next step, you need to either remove the `TgCrypto` line from `requirements.txt` (TgCrypto is not critical) or install the required software for automatic compilation of this package during installation:
+```shell
+apt install build-essential python3-dev
+```
 2. Run the installation: `chmod +x INSTALL.sh START.sh && ./INSTALL.sh`, then specify your API_ID and API_HASH in the .env file.
 3. Use `./START.sh` to run the bot (or in the console: `python3 main.py`).
 
@@ -88,6 +96,9 @@ $ git clone https://github.com/Alexell/XEmpireBot.git
 $ cd XEmpireBot
 
 # Linux
+# ATTENTION: If you have installed Python 3.12, before proceeding to the next step, you need to:
+#    either remove the TgCrypto line from requirements.txt (TgCrypto is not critical)
+#    or install the necessary software for automatic compilation of this package during installation with the command: apt install build-essential python3-dev
 $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip3 install -r requirements.txt
@@ -95,7 +106,10 @@ $ cp .env-example .env
 $ nano .env # specify your API_ID and API_HASH, the rest can be left as default
 $ python3 main.py
 
-# Windows (first, install Python 3.10)
+# Windows (first, install Python 3.10 or a later version)
+# ATTENTION: If you have installed Python 3.12, before proceeding to the next step, you need to:
+#    either remove the TgCrypto line from requirements.txt (TgCrypto is not critical)
+#    or install the necessary software for automatic compilation of this package during installation, link: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 > python -m venv venv
 > venv\Scripts\activate
 > pip install -r requirements.txt

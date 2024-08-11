@@ -53,13 +53,21 @@
 
 ## Быстрый старт
 ### Windows
-1. Убедитесь, что у вас установлен **Python 3.10**.
+1. Убедитесь, что у вас установлен **Python 3.10** или более поздняя версия.
+
+**Внимание:** если вы используете **Python 3.12**, то прежде чем переходить к следующему шагу, вам нужно либо удалить строку с `TgCrypto` из `requirements.txt` (отсутствие TgCrypto не критично), либо установить [необходимое ПО](https://visualstudio.microsoft.com/visual-cpp-build-tools/) для автоматической сборки этого пакета во время установки.
+
 2. Используйте `INSTALL.bat` для установки, затем укажите ваши API_ID и API_HASH в .env
 3. Используйте `START.bat` для запуска бота (или в консоли: `python main.py`)
 
 ### Linux
 1. Клонируйте репозиторий: `git clone https://github.com/Alexell/XEmpireBot.git && cd XEmpireBot`
-2. Выполните установку: `chmod +x INSTALL.sh START.sh && ./INSTALL.sh`, затем укажите ваши API_ID и API_HASH в .env
+
+**Внимание:** если вы установили **Python 3.12**, то прежде чем переходить к следующему шагу, вам нужно либо удалить строку с `TgCrypto` из `requirements.txt` (отсутствие TgCrypto не критично), либо установить необходимое ПО для автоматической сборки этого пакета во время установки:
+```shell
+apt install build-essential python3-dev
+```
+2. Выполните установку: `chmod +x INSTALL.sh START.sh && ./INSTALL.sh`, затем укажите ваши API_ID и API_HASH в .env.
 3. Используйте `./START.sh` для запуска бота (или в консоли: `python3 main.py`)
 
 ## Запуск в Docker
@@ -89,6 +97,9 @@ $ git clone https://github.com/Alexell/XEmpireBot.git
 $ cd XEmpireBot
 
 # Linux
+# ВНИМАНИЕ: если вы установили Python 3.12, то прежде чем переходить к следующему шагу, вам нужно:
+#    либо удалить строку с TgCrypto из requirements.txt (отсутствие TgCrypto не критично)
+#    либо установить необходимое ПО для автоматической сборки этого пакета во время установки, команда: apt install build-essential python3-dev
 $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip3 install -r requirements.txt
@@ -96,7 +107,10 @@ $ cp .env-example .env
 $ nano .env # укажите ваши API_ID и API_HASH, остальное можно оставить по умолчанию
 $ python3 main.py
 
-# Windows (сначала установите Python 3.10)
+# Windows (сначала установите Python 3.10 или более позднюю версию)
+# ВНИМАНИЕ: если вы установили Python 3.12, то прежде чем переходить к следующему шагу, вам нужно:
+#    либо удалить строку с TgCrypto из requirements.txt (отсутствие TgCrypto не критично)
+#    либо установить необходимое ПО для автоматической сборки этого пакета во время установки, ссылка: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 > python -m venv venv
 > venv\Scripts\activate
 > pip install -r requirements.txt
