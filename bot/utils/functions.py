@@ -129,9 +129,10 @@ def improve_possible(skill: dict, my_skills: dict | list, level: int, balance: i
 	if isinstance(my_skills, dict) and skill['key'] in my_skills:
 		my_skill = my_skills[skill['key']]
 		if skill['maxLevel'] <= my_skill['level']: return None
-		if type(my_skill['finishUpgradeDate']) is str:
+		if isinstance(my_skill['finishUpgradeDate'], str):
 			my_skill["finishUpgradeDate"] = datetime.strptime(my_skill['finishUpgradeDate'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc).timestamp()
-		if my_skill['finishUpgradeDate'] is int and my_skill['finishUpgradeDate'] > time(): return None
+		if isinstance(my_skill['finishUpgradeDate'], (int, float)) and my_skill['finishUpgradeDate'] > time():
+			return None
 		skill_price = get_price(skill, my_skill['level'] + 1)
 		current_profit = get_profit(skill, my_skill['level'])
 		next_profit = get_profit(skill, my_skill['level'] + 1)
