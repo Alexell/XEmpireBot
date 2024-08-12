@@ -247,7 +247,7 @@ def number_short(value: int, round_value: bool = False) -> str:
 		result = value / 1e12
 		return f"{(round(result) if round_value or result % 1 == 0 else int(result * 10) / 10)}T"
 
-def calculate_tap_power(per_tap : int, energy: int, bonus_chance: int, bonus_mult: int):
+def calculate_tap_power(per_tap : int, energy: int, bonus_chance: float, bonus_mult: float):
 	if per_tap < energy:
 		gain = False
 		if per_tap * bonus_mult <= energy:
