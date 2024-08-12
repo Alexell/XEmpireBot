@@ -42,13 +42,15 @@
 
 You can obtain the **API_ID** and **API_HASH** after creating an application at [my.telegram.org/apps](https://my.telegram.org/apps)
 
-**PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. League names for the **PVP_LEAGUE** parameter: `bronze`, `silver`, `gold`, `platina`, `diamond`. You can also specify `auto` in the **PVP_LEAGUE** parameter, and the bot will automatically select the lowest available league for you. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle (the bot performs all actions, then sleeps for an hour, which is the recurring cycle).
+**PvP negotiations** are disabled by default. Enable at your own risk. Upgrade your negotiation and ethics skills to win in case of a tie. League names for the **PVP_LEAGUE** parameter: `bronze`, `silver`, `gold`, `platina`, `diamond`. You can also specify `auto` in the **PVP_LEAGUE** parameter, and the bot will automatically select the lowest available league for you. The default strategy is randomly selected for each negotiation. If you wish, you can specify your own strategy, which will be used **in all** negotiations. Strategy names for the **PVP_STRATEGY** parameter: `aggressive`, `flexible`, `protective`. The **PVP_COUNT** parameter determines the number of negotiations the bot will conduct in one cycle.
 
 The answer to the **daily quiz** and the list of funds with guaranteed profits for **investing** are loaded from a [json file](https://alexell.pro/crypto/x-empire/data.json) on my website. I will try to update the data daily so that all your deployed bots can perform these actions and earn additional profit. When investing, the bet amount will always be the maximum, as the profit is guaranteed. If there is not enough money for the maximum bet, the bet amount will be reduced.
 
 Each cycle, the bot will upgrade as many profit skills as specified in the **SKILLS_COUNT** parameter. The default is 10. The most beneficial skills will be chosen first. If possible, the bot will improve mining skills by 1 level each cycle until the level reaches the value specified in **MINING_SKILLS_LEVEL** parameter. Set it to 0 if you do not need to improve mining skills.
 
 If you want to protect a certain amount of money in the balance, set the desired amount in the **PROTECTED_BALANCE** parameter. The bot will not allow the balance to fall below this amount.
+
+**Intervals.** During the day, if `TAPS_ENABLED=True`, the bot performs taps continuously, with delays only for energy recovery. Other actions are performed approximately every hour. At night, taps and other actions are performed approximately every 3 hours.
 
 ## Quick start
 ### Windows
