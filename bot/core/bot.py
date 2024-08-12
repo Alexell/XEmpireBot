@@ -46,8 +46,8 @@ class CryptoBot:
 				except (Unauthorized, UserDeactivated, AuthKeyUnregistered) as error:
 					raise RuntimeError(str(error)) from error
 			web_view = await self.tg_client.invoke(RequestWebView(
-				peer=await self.tg_client.resolve_peer('muskempire_bot'),
-				bot=await self.tg_client.resolve_peer('muskempire_bot'),
+				peer=await self.tg_client.resolve_peer('empirebot'),
+				bot=await self.tg_client.resolve_peer('empirebot'),
 				platform='android',
 				from_bot_menu=False,
 				url='https://game.xempire.io/'
@@ -105,26 +105,6 @@ class CryptoBot:
 		hash_string = hash_object.hexdigest()
 		self.http_client.headers['Api-Time'] = time_string
 		self.http_client.headers['Api-Hash'] = hash_string
-	
-	async def get_dbs(self) -> dict:
-		url = self.api_url + '/dbs'
-		try:
-			json_data = {'data': {'dbs': ['all']}}
-			await self.set_sign_headers(data=json_data)
-			response = await self.http_client.post(url, json=json_data)
-			response.raise_for_status()
-			response_text = await response.text()
-			if config.DEBUG_MODE:
-				log.debug(f"{self.session_name} | Database response:\n{response_text}")
-			response_json = json.loads(response_text)
-			success = response_json.get('success', False)
-			if success: return response_json['data']
-			else: return {}
-		except Exception as error:
-			self.errors += 1
-			log.error(f"{self.session_name} | Database error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
-			await asyncio.sleep(delay=3)
-			return {}
 
 	async def get_profile(self, full: bool) -> dict:
 		full_url = self.api_url + '/user/data/all'
@@ -329,7 +309,7 @@ class CryptoBot:
 			return False
 	
 	def get_tap_limit(self) -> int:
-		for level_info in self.dbs['dbLevels']:
+		for level_info in self.dbData['dbLevels']:
 			if level_info['level'] == self.level:
 				return int(level_info['tapLimit'] or 0)
 		return 0
@@ -604,8 +584,9 @@ class CryptoBot:
 							log.success(f"{self.session_name} | Login successful")
 							self.authorized = True
 							self.http_client.headers['Api-Key'] = self.api_key
-							self.dbs = await self.get_dbs()
 							full_profile = await self.get_profile(full=True)
+							self.dbData = full_profile.get('dbData', {})
+							if self.dbData: del full_profile['dbData']
 							if self.user_id is None: self.user_id = int(full_profile['profile']['id'] or 0)
 							self.balance = int(full_profile['hero']['money'] or 0)
 							if not hasattr(self, 'level'):
@@ -674,10 +655,10 @@ class CryptoBot:
 									log.success(f"{self.session_name} | Reward for friend {friend} claimed")
 						
 						if config.PVP_ENABLED:
-							if self.dbs:
+							if self.dbData:
 								league_data = None
 								selected_league = None
-								for league in self.dbs['dbNegotiationsLeague']:
+								for league in self.dbData['dbNegotiationsLeague']:
 									if config.PVP_LEAGUE == 'auto':
 										if self.level >= league['requiredLevel'] and self.level <= league['maxLevel']:
 											if league_data is None or league['requiredLevel'] < league_data['requiredLevel']:
@@ -693,7 +674,7 @@ class CryptoBot:
 								if config.PVP_LEAGUE != 'auto' and league_data is None:
 									if selected_league:
 										if config.PVP_UPGRADE_LEAGUE:
-											for league in self.dbs['dbNegotiationsLeague']:
+											for league in self.dbData['dbNegotiationsLeague']:
 												if league['requiredLevel'] > selected_league['requiredLevel'] and self.level >= league['requiredLevel']:
 													league_data = league
 													break
@@ -706,7 +687,7 @@ class CryptoBot:
 										log.warning(f"{self.session_name} | PVP_LEAGUE param is invalid. PvP negotiations disabled.")
 
 								if league_data is not None:
-									self.strategies = [strategy['key'] for strategy in self.dbs['dbNegotiationsStrategy']]
+									self.strategies = [strategy['key'] for strategy in self.dbData['dbNegotiationsStrategy']]
 									if config.PVP_STRATEGY == 'random' or config.PVP_STRATEGY in self.strategies:
 										await asyncio.sleep(random.randint(2, 4))
 										await self.perform_pvp(league=league_data, strategy=config.PVP_STRATEGY, count=config.PVP_COUNT)
@@ -723,7 +704,7 @@ class CryptoBot:
 						rebus_key = ''
 						rebus_answer = ''
 						rebus_req_level = 0
-						for quest in self.dbs['dbQuests']:
+						for quest in self.dbData['dbQuests']:
 							if quest['isArchived']: continue
 							date_start = datetime.strptime(quest['dateStart'], '%Y-%m-%d %H:%M:%S') if quest.get('dateStart') else None
 							date_end = datetime.strptime(quest['dateEnd'], '%Y-%m-%d %H:%M:%S') if quest.get('dateEnd') else None
@@ -775,7 +756,7 @@ class CryptoBot:
 						if config.MINING_SKILLS_LEVEL > 0:
 							my_skills = full_profile['skills']
 							friends_count = int(full_profile['profile']['friends'] or 0)
-							for skill in self.dbs['dbSkills']:
+							for skill in self.dbData['dbSkills']:
 								if skill['category'] != 'mining': continue
 								if skill['key'] in my_skills:
 									if my_skills[skill['key']]['level'] >= config.MINING_SKILLS_LEVEL: continue
@@ -794,7 +775,7 @@ class CryptoBot:
 							improved_skills = 0
 							improve_data = None
 							while improved_skills < config.SKILLS_COUNT:
-								skill = calculate_best_skill(skills=self.dbs['dbSkills'], ignored_skills=config.IGNORED_SKILLS, profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
+								skill = calculate_best_skill(skills=self.dbData['dbSkills'], ignored_skills=config.IGNORED_SKILLS, profile=full_profile, level=self.level, balance=self.balance, improve=improve_data)
 								if skill is None: break
 								if self.balance - skill['price'] < config.PROTECTED_BALANCE:
 									log.warning(f"{self.session_name} | Skill improvement stopped (balance protection)")
