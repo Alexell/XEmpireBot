@@ -46,8 +46,8 @@ class CryptoBot:
 				except (Unauthorized, UserDeactivated, AuthKeyUnregistered) as error:
 					raise RuntimeError(str(error)) from error
 			web_view = await self.tg_client.invoke(RequestWebView(
-				peer=await self.tg_client.resolve_peer('muskempire_bot'),
-				bot=await self.tg_client.resolve_peer('muskempire_bot'),
+				peer=await self.tg_client.resolve_peer('empirebot'),
+				bot=await self.tg_client.resolve_peer('empirebot'),
 				platform='android',
 				from_bot_menu=False,
 				url='https://game.xempire.io/'
