@@ -49,7 +49,7 @@ class CryptoBot:
 				peer=await self.tg_client.resolve_peer('empirebot'),
 				bot=await self.tg_client.resolve_peer('empirebot'),
 				platform='android',
-				from_bot_menu=False,
+				from_bot_menu=True,
 				url='https://game.xempire.io/'
 			))
 			auth_url = web_view.url
@@ -142,8 +142,13 @@ class CryptoBot:
 					log.debug(f"{self.session_name} | Sync profile response:\n{response_text}")
 				response_json = json.loads(response_text)
 				return response_json['data']
-		except Exception as error:
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
 			self.errors += 1
+			log.error(f"{self.session_name} | Profile data http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return {}
+		except Exception as error:
 			log.error(f"{self.session_name} | Profile data error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return {}
@@ -167,8 +172,13 @@ class CryptoBot:
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
-		except Exception as error:
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
 			self.errors += 1
+			log.error(f"{self.session_name} | Offline bonus http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return False
+		except Exception as error:
 			log.error(f"{self.session_name} | Offline bonus error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return False
@@ -192,6 +202,12 @@ class CryptoBot:
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Daily reward http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return False
 		except Exception as error:
 			log.error(f"{self.session_name} | Daily reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
@@ -215,6 +231,12 @@ class CryptoBot:
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Quest reward http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return False
 		except Exception as error:
 			log.error(f"{self.session_name} | Quest reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
@@ -238,6 +260,12 @@ class CryptoBot:
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Daily quest reward http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return False
 		except Exception as error:
 			log.error(f"{self.session_name} | Daily quest reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
@@ -261,9 +289,13 @@ class CryptoBot:
 						await asyncio.sleep(random.randint(1, 2))
 						if await self.daily_quest_reward(quest=name):
 							log.success(f"{self.session_name} | Reward for daily quest {name} claimed")
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Daily quests http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
 		except Exception as error:
 			log.error(f"{self.session_name} | Daily quests error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
-			return False
 	
 	async def complete_quest(self, quest: str, code:str) -> bool:
 		url = self.api_url + '/quests/check'
@@ -280,6 +312,12 @@ class CryptoBot:
 				await asyncio.sleep(delay=2)
 				if await self.quest_reward(quest=quest, code=code):
 					return True
+			return False
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Complete quest http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
 			return False
 		except Exception as error:
 			log.error(f"{self.session_name} | Complete quest error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
@@ -304,6 +342,12 @@ class CryptoBot:
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return True
 			else: return False
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Friend reward http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return False
 		except Exception as error:
 			log.error(f"{self.session_name} | Friend reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
@@ -362,9 +406,14 @@ class CryptoBot:
 					cur_time_gmt = datetime.now(self.gmt_timezone)
 					self.taps_limit_date = cur_time_gmt.strftime('%Y-%m-%d')
 					last = True
+			except aiohttp.ClientResponseError as error:
+				if error.status == 401: self.authorized = False
+				self.errors += 1
+				log.error(f"{self.session_name} | Taps http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+				await asyncio.sleep(delay=3)
+				break
 			except Exception as error:
 				log.error(f"{self.session_name} | Taps error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
-				self.errors += 1
 				break
 
 	async def perform_pvp(self, league: dict, strategy: str, count: int) -> None:
@@ -454,20 +503,27 @@ class CryptoBot:
 						self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					
 					await asyncio.sleep(random.randint(1, 2))
-			
+			except aiohttp.ClientResponseError as error:
+				if error.status == 401: self.authorized = False
+				self.errors += 1
+				log.error(f"{self.session_name} | PvP http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+				await asyncio.sleep(delay=3)
+				break
 			except Exception as error:
 				log.error(f"{self.session_name} | PvP error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
-				self.errors += 1
 				await asyncio.sleep(random.randint(10, 30))
+				break
 		money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
 	async def get_helper(self) -> dict:
-		url = 'https://alexell.pro/crypto/x-empire/data.json'
-		response = await self.http_client.get(url)
+		url = 'https://alexell.pro/crypto/x-empire/data.php'
+		json_data = {}
+		await self.set_sign_headers(data=json_data)
+		response = await self.http_client.post(url, json=json_data)
 		if response.status == 200:
 			response_json = await response.json()
-			return response_json
+			return response_json.get('result', {})
 		else: return {}
 
 	async def get_funds_info(self) -> dict:
@@ -482,8 +538,13 @@ class CryptoBot:
 				log.debug(f"{self.session_name} | Funds response:\n{response_text}")
 			response_json = json.loads(response_text)
 			return response_json['data']
-		except Exception as error:
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
 			self.errors += 1
+			log.error(f"{self.session_name} | Funds http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return {}
+		except Exception as error:
 			log.error(f"{self.session_name} | Funds error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 			return {}
@@ -517,8 +578,12 @@ class CryptoBot:
 						money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
 						log.success(f"{self.session_name} | Invest completed. {money_str}")
 						break
-		except Exception as error:
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
 			self.errors += 1
+			log.error(f"{self.session_name} | Invest http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+		except Exception as error:
 			log.error(f"{self.session_name} | Invest error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 
 	async def improve_skill(self, skill: str) -> dict | None:
@@ -540,14 +605,20 @@ class CryptoBot:
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
 				return response_json['data']
 			else: return None
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Improve skill http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+			return None
 		except Exception as error:
 			log.error(f"{self.session_name} | Improve skill error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return None
 
 	def update_level(self, level: int) -> None:
-		if level > self.level:
+		if self.level > 0 and level > self.level:
 			log.success(f"{self.session_name} | You have reached a new level: {level}")
-			self.level = level
+		self.level = level
 	
 	async def check_proxy(self, proxy: Proxy) -> None:
 		try:
@@ -572,6 +643,7 @@ class CryptoBot:
 			sum_delay = 0
 			sleep_time = 0
 			main_actions = True
+			self.level = 0
 			self.authorized = False
 			while True:
 				if self.errors >= config.ERRORS_BEFORE_STOP:
@@ -589,10 +661,7 @@ class CryptoBot:
 							if self.dbData: del full_profile['dbData']
 							if self.user_id is None: self.user_id = int(full_profile['profile']['id'] or 0)
 							self.balance = int(full_profile['hero']['money'] or 0)
-							if not hasattr(self, 'level'):
-								self.level = int(full_profile['hero']['level'] or 0)
-							else:
-								self.update_level(level=int(full_profile['hero']['level'] or 0))
+							self.update_level(level=int(full_profile['hero']['level'] or 0))
 							self.mph = int(full_profile['hero']['moneyPerHour'] or 0)
 							offline_bonus = int(full_profile['hero']['offlineBonus'] or 0)
 							if offline_bonus > 0:
