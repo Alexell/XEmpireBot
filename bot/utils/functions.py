@@ -151,7 +151,7 @@ def improve_possible(skill: dict, my_skills: dict | list, level: int, balance: i
 						matched_skill_limit = skill_limit
 						break
 			else:
-				matched_skill_limit = skill['levels'][0]
+				matched_skill_limit = skill['levels'][0] if skill['levels'][0]['level'] == 1 else None
 			if matched_skill_limit is None: possible = True
 			elif matched_skill_limit['requiredHeroLevel'] <= level and matched_skill_limit['requiredFriends'] <= friends:
 				if not matched_skill_limit['requiredSkills']: possible = True
