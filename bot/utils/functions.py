@@ -114,11 +114,21 @@ def calculate_best_skill(skills: list, ignored_skills: list, profile: dict, leve
 			possible_skills.append(possible_skill)
 	
 	if possible_skills:
-		possible_skills = sorted(possible_skills, key=lambda x: x["ratio"], reverse=True)
+		match config.SKILLS_MODE:
+			case 'profitness':
+				possible_skills = sorted(possible_skills, key=lambda x: (x['profit'] / x['price'], x['profit']), reverse=True)
+			case 'profit':
+				possible_skills = sorted(possible_skills, key=lambda x: x['profit'], reverse=True)
+			case 'price':
+				possible_skills = sorted(possible_skills, key=lambda x: x['price'], reverse=False)
+			case _:
+				possible_skills = sorted(possible_skills, key=lambda x: (x['profit'] / x['price'], x['profit']), reverse=True)
+		
 		if config.DEBUG_MODE:
-			log.debug(f"Possible skills for improve:")
+			log.debug(f"Possible skills for improve (mode={config.SKILLS_MODE}):")
 			for skill in possible_skills:
 				print(f"{skill['key']:35} | price: {number_short(skill['price']):>7} | profit: {number_short(skill['profit']):>7}")
+		
 		best_skill = possible_skills[0]
 		return best_skill
 	return None
@@ -161,7 +171,6 @@ def improve_possible(skill: dict, my_skills: dict | list, level: int, balance: i
 							if my_skills.get(req_skill, {}).get('level', 0) >= req_level: possible = True
 	
 	if possible:
-		skill['ratio'] = skill_profit / skill_price
 		skill['price'] = skill_price
 		skill['profit'] = skill_profit
 		if isinstance(my_skills, dict):

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 	PVP_STRATEGY: str = 'random'
 	PVP_COUNT: int = 10
 	SKILLS_COUNT: int = 10
+	SKILLS_MODE: str = 'profitness'
 	IGNORED_SKILLS: list[str] = []
 	MINING_SKILLS_LEVEL: int = 10
 	PROTECTED_BALANCE: int = 0
