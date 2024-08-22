@@ -12,7 +12,7 @@
 | Sleep before run each session         |     ✅     |
 | Claim daily grant                     |     ✅     |
 | Claim reward for friends              |     ✅     |
-| Claim reward for completed quests     |     ✅     |
+| Claim reward for quests               |     ✅     |
 | Claim offline bonus                   |     ✅     |
 | Automatic taps                        |     ✅     |
 | PvP negotiations                      |     ✅     |
