@@ -765,7 +765,19 @@ class CryptoBot:
 										log.warning(f"{self.session_name} | PVP_STRATEGY param is invalid. PvP negotiations disabled.")
 							else:
 								log.warning(f"{self.session_name} | Database is missing. PvP negotiations will be skipped this time.")
-
+						
+						# Quests with fakeCheck (2 quests at a time to avoid attracting attention)
+						quests_completed = 0
+						for dbQuest in self.dbData['dbQuests']:
+							if quests_completed >= 2: break
+							if dbQuest['isArchived']: continue
+							if dbQuest['checkType'] != 'fakeCheck': continue
+							if not any(dbQuest['key'] in quest['key'] for quest in full_profile['quests']):
+								if await self.quest_reward(quest=dbQuest['key']):
+									quests_completed += 1
+									log.success(f"{self.session_name} | Reward for quest {dbQuest['key']} claimed")
+									await asyncio.sleep(random.randint(10, 20))
+						
 						# Daily quiz and rebus
 						quiz_key = ''
 						quiz_answer = ''
