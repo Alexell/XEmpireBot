@@ -394,7 +394,7 @@ class CryptoBot:
 					self.mph = int(response_json['data']['hero']['moneyPerHour'])
 					energy = int(response_json['data']['hero']['earns']['task']['energy'])
 					tapped_today = int(response_json['data']['tapped_today'])
-					log.success(f"{self.session_name} | Earned money: +{number_short(value=earned_money)} | Energy left: {energy}")
+					log.success(f"{self.session_name} | Earned money: +{number_short(value=earned_money)} | Energy left: {number_short(value=energy)}")
 					if tapped_today >= tap_limit: taps_over = True
 					if last and not taps_over:
 						log.warning(f"{self.session_name} | Taps stopped (not enough energy)")
@@ -517,14 +517,22 @@ class CryptoBot:
 		log.info(f"{self.session_name} | PvP negotiations finished. {money_str}")
 
 	async def get_helper(self) -> dict:
-		url = 'https://alexell.pro/crypto/x-empire/data.php'
-		json_data = {}
-		await self.set_sign_headers(data=json_data)
-		response = await self.http_client.post(url, json=json_data)
-		if response.status == 200:
-			response_json = await response.json()
-			return response_json.get('result', {})
-		else: return {}
+		url = 'https://alexell.pro/crypto/x-empire/data/'
+		try:
+			json_data = {'data': 'alexell'}
+			await self.set_sign_headers(data=json_data)
+			response = await self.http_client.post(url, json=json_data)
+			if response.status in [200, 400, 401, 403]:
+				response_json = await response.json()
+				success = response_json.get('success', False)
+				if success:
+					return response_json.get('result', {})
+				else:
+					log.error(f"{self.session_name} | Get helper error: {response.status} {response_json.get('message', '')}")
+					return {}
+		except Exception as error:
+			log.error(f"{self.session_name} | Get helper error: {str(error)}")
+			return {}
 
 	async def get_funds_info(self) -> dict:
 		url = self.api_url + '/fund/info'
@@ -552,10 +560,10 @@ class CryptoBot:
 	async def invest(self, fund: str, amount: int) -> None:
 		url = self.api_url + '/fund/invest'
 		if self.balance < amount:
-			log.warning(f"{self.session_name} | Not enough money for invest")
+			log.warning(f"{self.session_name} | Not enough money for investing")
 			return
 		if self.balance - amount < config.PROTECTED_BALANCE:
-			log.warning(f"{self.session_name} | Investment skipped (balance protection)")
+			log.warning(f"{self.session_name} | Investing skipped (balance protection)")
 			return
 		try:
 			json_data = {'data': {'fund': fund, 'money': amount}}
@@ -564,7 +572,7 @@ class CryptoBot:
 			response.raise_for_status()
 			response_text = await response.text()
 			if config.DEBUG_MODE:
-				log.debug(f"{self.session_name} | Invest response:\n{response_text}")
+				log.debug(f"{self.session_name} | Investing response:\n{response_text}")
 			response_json = json.loads(response_text)
 			success = response_json.get('success', False)
 			if success:
@@ -576,15 +584,15 @@ class CryptoBot:
 					if fnd['fundKey'] == fund:
 						money = fnd['moneyProfit']
 						money_str = f"Profit: +{number_short(value=money)}" if money > 0 else (f"Loss: {number_short(value=money)}" if money < 0 else "Profit: 0")
-						log.success(f"{self.session_name} | Invest completed. {money_str}")
+						log.success(f"{self.session_name} | Investing {number_short(value=amount)} in {fund} successfully. {money_str}")
 						break
 		except aiohttp.ClientResponseError as error:
 			if error.status == 401: self.authorized = False
 			self.errors += 1
-			log.error(f"{self.session_name} | Invest http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			log.error(f"{self.session_name} | Investing http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
 		except Exception as error:
-			log.error(f"{self.session_name} | Invest error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			log.error(f"{self.session_name} | Investing error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 
 	async def improve_skill(self, skill: str) -> dict | None:
 		url = self.api_url + '/skills/improve'
@@ -821,18 +829,24 @@ class CryptoBot:
 									need_rebus = False
 									log.success(f"{self.session_name} | Reward for daily rebus claimed")
 						
-						# Invest with external data for combo
+						# Investing with external data for combo
 						helper = await self.get_helper()
 						if cur_time_gmt >= new_day_gmt and cur_time_gmt_s in helper:
 							helper = helper[cur_time_gmt_s]
 							if 'funds' in helper:
-								current_invest = await self.get_funds_info()
+								regular_funds = helper['funds'].get('regular', [])
+								special_fund = helper['funds'].get('special', None)
+								special_fund = special_fund if any(fund['key'] == special_fund for fund in self.dbData['dbFunds']) else None
+								current_funds = await self.get_funds_info()
 								await asyncio.sleep(random.randint(4, 8))
-								if 'funds' in current_invest and not current_invest['funds']:
-									for fund in helper['funds']:
-										await asyncio.sleep(random.randint(2, 4))
+								
+								if regular_funds and 'funds' in current_funds and not current_funds['funds']:
+									funds_to_invest = [special_fund] if special_fund else []
+									funds_to_invest += regular_funds[:2] if special_fund else regular_funds
+									for fund in funds_to_invest:
 										await self.invest(fund=fund, amount=calculate_bet(level=self.level, mph=self.mph, balance=self.balance))
-
+										await asyncio.sleep(random.randint(2, 4))
+						
 						# improve mining skills (+1 level to each per cycle)
 						if config.MINING_SKILLS_LEVEL > 0:
 							my_skills = full_profile['skills']
