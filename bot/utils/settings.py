@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 	IGNORED_SKILLS: list[str] = []
 	MINING_SKILLS_LEVEL: int = 10
 	PROTECTED_BALANCE: int = 0
+	REF_CODE: str = 'hero5726822287'
 
 	SLEEP_BETWEEN_START: list[int] = [20, 360]
 	ERRORS_BEFORE_STOP: int = 3

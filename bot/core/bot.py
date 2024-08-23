@@ -50,7 +50,8 @@ class CryptoBot:
 				bot=await self.tg_client.resolve_peer('empirebot'),
 				platform='android',
 				from_bot_menu=True,
-				url='https://game.xempire.io/'
+				url='https://game.xempire.io/',
+				start_param=config.REF_CODE
 			))
 			auth_url = web_view.url
 			tg_web_data = unquote(

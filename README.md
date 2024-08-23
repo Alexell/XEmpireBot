@@ -22,24 +22,25 @@
 | Docker                                |     ✅     |
 
 ## [Options](https://github.com/Alexell/XEmpireBot/blob/main/.env-example)
-| Option                  | Description                                                                             |
-|-------------------------|-----------------------------------------------------------------------------------------|
-| **API_ID / API_HASH**   | Platform data for launching a Telegram session                                          |
-| **TAPS_ENABLED**        | Taps enabled (True / False)                                                             |
-| **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                                |
-| **PVP_ENABLED**         | PvP negotiations enabled (True / False)                                                 |
-| **PVP_LEAGUE**          | League in negotiations (e.g. bronze or auto for automatic selection)                    |
-| **PVP_UPGRADE_LEAGUE**  | Upgrade league if league specified in PVP_LEAGUE is unavailable (True / False)          |
-| **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                                  |
-| **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                              |
-| **SKILLS_COUNT**        | Number of profit skills improved per cycle (e.g. 10)                                    |
-| **SKILLS_MODE**         | Profit skill selection mode for improvement (e.g. profitness)                           |
-| **IGNORED_SKILLS**      | Skills that the bot will not improve (e.g. ["agi", "voice_assistant", "translators"])   |
-| **MINING_SKILLS_LEVEL** | Max level of mining skill improve (e.g. 10)                                             |
-| **PROTECTED_BALANCE**   | Balance protected from spending on PvP, investments and skills (e.g. 100000000)         |
-| **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                        |
-| **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                             |
-| **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)                         |
+| Option                  | Description                                                                                |
+|-------------------------|--------------------------------------------------------------------------------------------|
+| **API_ID / API_HASH**   | Platform data for launching a Telegram session                                             |
+| **TAPS_ENABLED**        | Taps enabled (True / False)                                                                |
+| **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                                   |
+| **PVP_ENABLED**         | PvP negotiations enabled (True / False)                                                    |
+| **PVP_LEAGUE**          | League in negotiations (e.g. bronze or auto for automatic selection)                       |
+| **PVP_UPGRADE_LEAGUE**  | Upgrade league if league specified in PVP_LEAGUE is unavailable (True / False)             |
+| **PVP_STRATEGY**        | Strategy in negotiations (e.g. random)                                                     |
+| **PVP_COUNT**           | Number of negotiations per cycle (e.g. 10)                                                 |
+| **SKILLS_COUNT**        | Number of profit skills improved per cycle (e.g. 10)                                       |
+| **SKILLS_MODE**         | Profit skill selection mode for improvement (e.g. profitness)                              |
+| **IGNORED_SKILLS**      | Skills that the bot will not improve (e.g. ["agi", "voice_assistant", "translators"])      |
+| **MINING_SKILLS_LEVEL** | Max level of mining skill improve (e.g. 10)                                                |
+| **PROTECTED_BALANCE**   | Balance protected from spending on PvP, investments and skills (e.g. 100000000)            |
+| **REF_CODE**            | Your code from the invite link (e.g., hero123456) *if not provided, mine will be used*     |
+| **SLEEP_BETWEEN_START** | Sleep before start each session (e.g. [20, 360])                                           |
+| **ERRORS_BEFORE_STOP**  | The number of failed requests after which the bot will stop                                |
+| **USE_PROXY_FROM_FILE** | Whether to use proxy from the `proxies.txt` file (True / False)                            |
 
 You can obtain the **API_ID** and **API_HASH** after creating an application at [my.telegram.org/apps](https://my.telegram.org/apps)
 
