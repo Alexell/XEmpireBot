@@ -27,6 +27,7 @@
 | **API_ID / API_HASH**   | Platform data for launching a Telegram session                                             |
 | **TAPS_ENABLED**        | Taps enabled (True / False)                                                                |
 | **TAPS_PER_SECOND**     | Random number of taps per second (e.g. [20,30], max. 30)                                   |
+| **INVEST_ENABLED**      | Investments enabled (True / False)                                                         |
 | **PVP_ENABLED**         | PvP negotiations enabled (True / False)                                                    |
 | **PVP_LEAGUE**          | League in negotiations (e.g. bronze or auto for automatic selection)                       |
 | **PVP_UPGRADE_LEAGUE**  | Upgrade league if league specified in PVP_LEAGUE is unavailable (True / False)             |

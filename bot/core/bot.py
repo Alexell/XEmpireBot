@@ -844,22 +844,23 @@ class CryptoBot:
 									log.success(f"{self.session_name} | Reward for daily rebus claimed")
 						
 						# Investing with external data for combo
-						helper = await self.get_helper()
-						if cur_time_gmt >= new_day_gmt and cur_time_gmt_s in helper:
-							helper = helper[cur_time_gmt_s]
-							if 'funds' in helper:
-								regular_funds = helper['funds'].get('regular', [])
-								special_fund = helper['funds'].get('special', None)
-								special_fund = special_fund if any(fund['key'] == special_fund for fund in self.dbData['dbFunds']) else None
-								current_funds = await self.get_funds_info()
-								await asyncio.sleep(random.randint(4, 8))
-								
-								if regular_funds and 'funds' in current_funds and not current_funds['funds']:
-									funds_to_invest = [special_fund] if special_fund else []
-									funds_to_invest += regular_funds[:2] if special_fund else regular_funds
-									for fund in funds_to_invest:
-										await self.invest(fund=fund, amount=calculate_bet(level=self.level, mph=self.mph, balance=self.balance))
-										await asyncio.sleep(random.randint(2, 4))
+						if config.INVEST_ENABLED:
+							helper = await self.get_helper()
+							if cur_time_gmt >= new_day_gmt and cur_time_gmt_s in helper:
+								helper = helper[cur_time_gmt_s]
+								if 'funds' in helper:
+									regular_funds = helper['funds'].get('regular', [])
+									special_fund = helper['funds'].get('special', None)
+									special_fund = special_fund if any(fund['key'] == special_fund for fund in self.dbData['dbFunds']) else None
+									current_funds = await self.get_funds_info()
+									await asyncio.sleep(random.randint(4, 8))
+									
+									if regular_funds and 'funds' in current_funds and not current_funds['funds']:
+										funds_to_invest = [special_fund] if special_fund else []
+										funds_to_invest += regular_funds[:2] if special_fund else regular_funds
+										for fund in funds_to_invest:
+											await self.invest(fund=fund, amount=calculate_bet(level=self.level, mph=self.mph, balance=self.balance))
+											await asyncio.sleep(random.randint(2, 4))
 						
 						# improve mining skills (+1 level to each per cycle)
 						if config.MINING_SKILLS_LEVEL > 0:

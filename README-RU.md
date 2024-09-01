@@ -27,6 +27,7 @@
 | **API_ID / API_HASH**   | Данные платформы для запуска сессии Telegram                                                    |
 | **TAPS_ENABLED**        | Тапы включены (True / False)                                                                    |
 | **TAPS_PER_SECOND**     | Рандомное число тапов в секунду (напр. [20,30], макс. 30)                                       |
+| **INVEST_ENABLED**      | Инвестиции включены (True / False)                                                              |
 | **PVP_ENABLED**         | PvP переговоры включены (True / False)                                                          |
 | **PVP_LEAGUE**          | Лига в переговорах (напр. bronze или auto для автоматического выбора)                           |
 | **PVP_UPGRADE_LEAGUE**  | Повышение лиги, если лига, указанная в PVP_LEAGUE, недоступна (True / False)                    |
