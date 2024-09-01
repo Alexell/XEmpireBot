@@ -650,9 +650,10 @@ class CryptoBot:
 		except Exception as error:
 			log.error(f"{self.session_name} | Proxy: {proxy} | Error: {error}")
 
-	async def run(self, proxy: str | None) -> None:
-		proxy_conn = ProxyConnector().from_url(proxy) if proxy else None
-
+	async def run(self, sess_data: dict) -> None:
+		proxy = sess_data['proxy'] if sess_data['proxy'] else None
+		proxy_conn = ProxyConnector().from_url(sess_data['proxy']) if proxy else None
+		headers['User-Agent'] = sess_data['ua']
 		async with aiohttp.ClientSession(headers=headers, connector=proxy_conn) as http_client:
 			self.http_client = http_client
 			if proxy:
@@ -966,8 +967,8 @@ class CryptoBot:
 					log.error(f"{self.session_name} | Unknown error: {error}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 					await asyncio.sleep(delay=3)
 
-async def run_bot(tg_client: Client, proxy: str | None):
+async def run_bot(tg_client: Client, sess_data: dict):
 	try:
-		await CryptoBot(tg_client=tg_client).run(proxy=proxy)
+		await CryptoBot(tg_client=tg_client).run(sess_data=sess_data)
 	except RuntimeError as error:
 		log.error(f"{tg_client.name} | Session error: {str(error)}")
