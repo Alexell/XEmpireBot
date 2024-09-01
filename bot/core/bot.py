@@ -2,12 +2,13 @@ import asyncio, aiohttp, random, math, json, hashlib, traceback
 from time import time as time_now
 from zoneinfo import ZoneInfo
 from datetime import datetime, time
-from urllib.parse import unquote
+from urllib.parse import urlparse, parse_qs, unquote
 from aiohttp_proxy import ProxyConnector
 from better_proxy import Proxy
 from pyrogram import Client
 from pyrogram.errors import Unauthorized, UserDeactivated, AuthKeyUnregistered
-from pyrogram.raw.functions.messages import RequestWebView
+from pyrogram.raw.functions.messages import RequestAppWebView
+from pyrogram.raw.types import InputBotAppShortName
 
 from bot.utils.logger import log
 from bot.utils.settings import config
@@ -43,29 +44,41 @@ class CryptoBot:
 			if not self.tg_client.is_connected:
 				try:
 					await self.tg_client.connect()
+					if self.user_id is None:
+						user = await self.tg_client.get_me()
+						self.user_id = user.id
 				except (Unauthorized, UserDeactivated, AuthKeyUnregistered) as error:
 					raise RuntimeError(str(error)) from error
-			web_view = await self.tg_client.invoke(RequestWebView(
-				peer=await self.tg_client.resolve_peer('empirebot'),
-				bot=await self.tg_client.resolve_peer('empirebot'),
-				platform='android',
-				from_bot_menu=True,
-				url='https://game.xempire.io/',
-				start_param=config.REF_CODE
-			))
-			auth_url = web_view.url
-			tg_web_data = unquote(
-				string=auth_url.split('tgWebAppData=', maxsplit=1)[1].split('&tgWebAppVersion', maxsplit=1)[0])
+
+			bot_peer = await self.tg_client.resolve_peer('empirebot')
+			ref_code = config.REF_CODE
 			
-			user_hash = tg_web_data[tg_web_data.find('hash=') + 5:]
+			app_params = {
+				'peer': bot_peer,
+				'app': InputBotAppShortName(bot_id=bot_peer, short_name='game'),
+				'platform': 'android',
+				'write_allowed': True
+			}
+			if str(self.user_id) not in ref_code: app_params['start_param'] = ref_code
+			web_view = await self.tg_client.invoke(RequestAppWebView(**app_params))
+			
+			parsed_url = urlparse(web_view.url)
+			tg_web_data = unquote(parsed_url.fragment.split("tgWebAppData=", maxsplit=1)[1].split('&tgWebAppVersion', maxsplit=1)[0])
+			params = parse_qs(tg_web_data)
+			chat_type = params.get('chat_type', [''])[0]
+			chat_instance = params.get('chat_instance', [''])[0]
+			user_hash = params.get('hash', [''])[0]
 			self.api_key = user_hash
 			if self.tg_client.is_connected:
 				await self.tg_client.disconnect()
 			
 			login_data = {'data': {
-					'initData' : tg_web_data,
-					'platform' : 'android',
-					'chatId' : ''
+					'chatId': '',
+					'chatInstance': chat_instance,
+					'chatType': chat_type,
+					'initData': tg_web_data,
+					'platform': 'android',
+					'startParam': ref_code
 				}
 			}
 			return login_data
