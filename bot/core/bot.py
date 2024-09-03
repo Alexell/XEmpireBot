@@ -19,6 +19,7 @@ class CryptoBot:
 	def __init__(self, tg_client: Client):
 		self.session_name = tg_client.name
 		self.tg_client = tg_client
+		self.bot_id = None
 		self.user_id = None
 		self.api_url = 'https://api.xempire.io'
 		self.taps_limit = False
@@ -50,12 +51,13 @@ class CryptoBot:
 				except (Unauthorized, UserDeactivated, AuthKeyUnregistered) as error:
 					raise RuntimeError(str(error)) from error
 
-			bot_peer = await self.tg_client.resolve_peer('empirebot')
 			ref_code = config.REF_CODE
+			if self.bot_id is None:
+				self.bot_id = await self.tg_client.resolve_peer('empirebot')
 			
 			app_params = {
-				'peer': bot_peer,
-				'app': InputBotAppShortName(bot_id=bot_peer, short_name='game'),
+				'peer': self.bot_id,
+				'app': InputBotAppShortName(bot_id=self.bot_id, short_name='game'),
 				'platform': 'android',
 				'write_allowed': True
 			}
