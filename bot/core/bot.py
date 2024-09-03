@@ -644,6 +644,40 @@ class CryptoBot:
 		except Exception as error:
 			log.error(f"{self.session_name} | Improve skill error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return None
+	
+	async def open_boxes(self) -> None:
+		url_list = self.api_url + '/box/list'
+		url_open = self.api_url + '/box/open'
+		try:
+			json_data = {}
+			await self.set_sign_headers(data=json_data)
+			response = await self.http_client.post(url_list, json=json_data)
+			response.raise_for_status()
+			response_text = await response.text()
+			if config.DEBUG_MODE:
+				log.debug(f"{self.session_name} | Boxes list response:\n{response_text}")
+			response_json = json.loads(response_text)
+			success = response_json.get('success', False)
+			if success and response_json['data']:
+				for name, _ in response_json['data'].items():
+					json_data = {'data': name}
+					await self.set_sign_headers(data=json_data)
+					res = await self.http_client.post(url_open, json=json_data)
+					res.raise_for_status()
+					res_text = await res.text()
+					if config.DEBUG_MODE:
+						log.debug(f"{self.session_name} | Open box response:\n{res_text}")
+					res_json = json.loads(res_text)
+					success = res_json.get('success', False)
+					if success and res_json['data']['loot']:
+						log.success(f"{self.session_name} | Box {name} opened")
+		except aiohttp.ClientResponseError as error:
+			if error.status == 401: self.authorized = False
+			self.errors += 1
+			log.error(f"{self.session_name} | Check boxes http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
+			await asyncio.sleep(delay=3)
+		except Exception as error:
+			log.error(f"{self.session_name} | Check boxes error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 
 	def update_level(self, level: int) -> None:
 		if self.level > 0 and level > self.level:
@@ -744,6 +778,9 @@ class CryptoBot:
 						
 						await asyncio.sleep(random.randint(2, 4))
 						await self.daily_quests()
+						
+						await asyncio.sleep(random.randint(2, 4))
+						await self.open_boxes()
 						
 						await asyncio.sleep(random.randint(2, 4))
 						unrewarded_friends = [int(friend['id']) for friend in full_profile['friends'] if friend['bonusToTake'] > 0]
