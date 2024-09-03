@@ -19,7 +19,7 @@ class CryptoBot:
 	def __init__(self, tg_client: Client):
 		self.session_name = tg_client.name
 		self.tg_client = tg_client
-		self.bot_id = None
+		self.bot_peer = None
 		self.user_id = None
 		self.api_url = 'https://api.xempire.io'
 		self.taps_limit = False
@@ -52,12 +52,12 @@ class CryptoBot:
 					raise RuntimeError(str(error)) from error
 
 			ref_code = config.REF_CODE
-			if self.bot_id is None:
-				self.bot_id = await self.tg_client.resolve_peer('empirebot')
+			if self.bot_peer is None:
+				self.bot_peer = await self.tg_client.resolve_peer('empirebot')
 			
 			app_params = {
-				'peer': self.bot_id,
-				'app': InputBotAppShortName(bot_id=self.bot_id, short_name='game'),
+				'peer': self.bot_peer,
+				'app': InputBotAppShortName(bot_id=self.bot_peer, short_name='game'),
 				'platform': 'android',
 				'write_allowed': True
 			}
@@ -79,10 +79,10 @@ class CryptoBot:
 					'chatInstance': chat_instance,
 					'chatType': chat_type,
 					'initData': tg_web_data,
-					'platform': 'android',
-					'startParam': ref_code
+					'platform': 'android'
 				}
 			}
+			if str(self.user_id) not in ref_code: login_data['data']['startParam'] = ref_code
 			return login_data
 
 		except RuntimeError as error:
@@ -339,10 +339,16 @@ class CryptoBot:
 			log.error(f"{self.session_name} | Complete quest error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			return False
 	
-	async def friend_reward(self, friend: int) -> bool:
-		url = self.api_url + '/friends/claim'
+	async def friend_reward(self, batch: bool = False, friend: int = 0) -> tuple[bool, list]:
+		url_claim = self.api_url + '/friends/claim'
+		url_batch = self.api_url + '/friends/claim/batch'
 		try:
-			json_data = {'data': friend}
+			if batch:
+				json_data = {}
+				url = url_batch
+			else:
+				json_data = {'data': friend}
+				url = url_claim
 			await self.set_sign_headers(data=json_data)
 			response = await self.http_client.post(url, json=json_data)
 			response.raise_for_status()
@@ -356,17 +362,17 @@ class CryptoBot:
 				self.update_level(level=int(response_json['data']['hero']['level']))
 				self.balance = int(response_json['data']['hero']['money'])
 				self.mph = int(response_json['data']['hero']['moneyPerHour'])
-				return True
-			else: return False
+				return True, response_json['data']['friends']
+			else: return False, []
 		except aiohttp.ClientResponseError as error:
 			if error.status == 401: self.authorized = False
 			self.errors += 1
 			log.error(f"{self.session_name} | Friend reward http error: {error.message}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
 			await asyncio.sleep(delay=3)
-			return False
+			return False, []
 		except Exception as error:
 			log.error(f"{self.session_name} | Friend reward error: {str(error)}" + (f"\nTraceback: {traceback.format_exc()}" if config.DEBUG_MODE else ""))
-			return False
+			return False, []
 	
 	def get_tap_limit(self) -> int:
 		for level_info in self.dbData['dbLevels']:
@@ -739,14 +745,25 @@ class CryptoBot:
 						await asyncio.sleep(random.randint(2, 4))
 						await self.daily_quests()
 						
+						await asyncio.sleep(random.randint(2, 4))
 						unrewarded_friends = [int(friend['id']) for friend in full_profile['friends'] if friend['bonusToTake'] > 0]
 						if unrewarded_friends:
 							log.info(f"{self.session_name} | Reward for friends available")
-							await asyncio.sleep(random.randint(2, 4))
+							
+							# Batch processing
+							while len(unrewarded_friends) >= 10:
+								success, friends = await self.friend_reward(batch=True)
+								if success:
+									log.success(f"{self.session_name} | Reward for 10 friends claimed")
+									unrewarded_friends = [int(friend['id']) for friend in friends if friend['bonusToTake'] > 0]
+								await asyncio.sleep(random.randint(2, 4))
+							
+							# Individual processing
 							for friend in unrewarded_friends:
-								await asyncio.sleep(random.randint(1, 2))
-								if await self.friend_reward(friend=friend):
+								success, _ = await self.friend_reward(batch=False, friend=friend)
+								if success:
 									log.success(f"{self.session_name} | Reward for friend {friend} claimed")
+								await asyncio.sleep(random.randint(1, 2))
 						
 						if config.PVP_ENABLED:
 							if self.dbData:
