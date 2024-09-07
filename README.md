@@ -21,6 +21,13 @@
 | Automatic skill improvement           |     ✅     |
 | Docker                                |     ✅     |
 
+#### Deploy on Koyeb
+
+The fastest way to deploy the application is to click the **Deploy to Koyeb** button below.
+
+
+[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=git&repository=github.com/namsteindia/XEmpireBot&branch=Koyeb-Deployment&name=XEmpireBot)
+
 ## [Options](https://github.com/Alexell/XEmpireBot/blob/main/.env-example)
 | Option                  | Description                                                                                |
 |-------------------------|--------------------------------------------------------------------------------------------|
