@@ -133,7 +133,7 @@ $ python3 main.py -a (1/2)
 # 2 - Run bot
 ```
 
-## Running a bot in the background (Linux)
+**## Running a bot in the background (Linux)**
 ```
 $ cd XEmpireBot
 
@@ -144,9 +144,14 @@ $ setsid venv/bin/python3 main.py --action 2 >> app.log 2>&1 &
 $ setsid venv/bin/python3 main.py --action 2 > /dev/null 2>&1 &
 
 # Now you can close the console, and the bot will continue its work.
+
 ```
 
 ### Find the bot process
 ```
 $ ps aux | grep "python3 main.py" | grep -v grep
 ```
+
+## **Running the bot in Koyeb (Free)
+<div class="markdown prose w-full break-words dark:prose-invert light"><h3>Steps to Deploy with Koyeb:</h3><ol><li><p><strong>Fork the Repo</strong></p><ul><li>Go to the repository you want to fork on GitHub.</li><li>Click on the "Fork" button in the top right corner to create a copy of the repository in your GitHub account.</li></ul></li><li><p><strong>Generate a <code>*.SESSION</code> File Locally</strong></p><ul><li>This step likely refers to generating a session file for an application. Follow the application's documentation to generate the session file locally. For instance, it could be done by running a script or command, depending on the specific setup.</li></ul></li><li><p><strong>Upload the <code>*.SESSION</code> File to <code>/sessions/yourname.SESSION</code></strong></p><ul><li>Upload the <code>.SESSION</code> file into the <code>sessions</code> folder of your repository.</li><li>Make sure the directory structure is correct, and replace <code>yourname</code> with your specific identifier or username.</li></ul></li><li><p><strong>Connect Your GitHub Account to Koyeb</strong></p><ul><li>Sign in or create an account on Koyeb (<a rel="noopener" target="_new" href="https://www.koyeb.com/">https://www.koyeb.com/</a>).</li><li>Go to the Koyeb dashboard and connect your GitHub account by selecting the "GitHub" option in the integration section.</li></ul></li><li><p><strong>Create a Web Service Using GitHub</strong></p><ul><li>In the Koyeb dashboard, go to the "Services" section and create a new service.</li><li>Select "GitHub" as the source for your service.</li></ul></li><li><p><strong>Select the Forked Repo</strong></p><ul><li>From the repository list, choose the repo you forked earlier to deploy.</li></ul></li><li><p><strong>Switch to the <code>Koyeb-Deployment</code> Branch</strong></p><ul><li>During the setup process, make sure to select the <code>Koyeb-Deployment</code> branch from the list of available branches.</li></ul></li><li><p><strong>Configure the <code>.env</code> or Environment Variables</strong></p><ul><li>If your application requires certain environment variables (like API keys or config settings), you can add them by:<ul><li>Uploading or editing the <code>.env</code> file directly in the forked repo.</li><li>Alternatively, in the Koyeb service dashboard, you can define the environment variables directly in the interface under the "Environment" section.</li></ul></li></ul></li><li><p><strong>Set Buildpack Run Command Override</strong></p><ul><li>Under the Buildpack section, you should override the default run command.</li><li>Enter the following command to start your Python application:<pre class="!overflow-visible"><div class="dark bg-gray-950 contain-inline-size rounded-md border-[0.5px] border-token-border-medium relative"><div class="flex items-center text-token-text-secondary bg-token-main-surface-secondary px-4 py-2 text-xs font-sans justify-between rounded-t-md h-9"></div><div class="sticky top-9 md:top-[5.75rem]"><div class="absolute bottom-0 right-2 flex h-9 items-center"><div class="flex items-center rounded bg-token-main-surface-secondary px-2 font-sans text-xs text-token-text-secondary"><span class="" data-state="closed"><button class="flex gap-1 items-center py-1"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-sm"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z" fill="currentColor"></path><code>python3 main.py -a 2
+</code></div></div></pre></li></ul></li></ol><p>These steps should help you deploy the application successfully with Koyeb and GitHub. Let me know if you'd like further assistance with any specific step!</p></div>
