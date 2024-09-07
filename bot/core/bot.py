@@ -20,6 +20,7 @@ class CryptoBot:
 		self.session_name = tg_client.name
 		self.tg_client = tg_client
 		self.bot_peer = None
+		self.bot_username = 'empirebot'
 		self.user_id = None
 		self.api_url = 'https://api.xempire.io'
 		self.taps_limit = False
@@ -50,11 +51,23 @@ class CryptoBot:
 						self.user_id = user.id
 				except (Unauthorized, UserDeactivated, AuthKeyUnregistered) as error:
 					raise RuntimeError(str(error)) from error
-
-			ref_code = config.REF_CODE
-			if self.bot_peer is None:
-				self.bot_peer = await self.tg_client.resolve_peer('empirebot')
 			
+			dialogs = self.tg_client.get_dialogs()
+			async for dialog in dialogs:
+				if dialog.chat and dialog.chat.username and dialog.chat.username == self.bot_username:
+					break
+			
+			while self.bot_peer is None:
+				try:
+					self.bot_peer = await self.tg_client.resolve_peer(self.bot_username)
+				except FloodWait as error:
+					seconds = error.value
+					log.warning(f"{self.session_name} | Telegram required a wait of {seconds} seconds")
+					seconds += 60
+					log.info(f"{self.session_name} | Sleep {seconds} seconds")
+					await asyncio.sleep(seconds)
+			
+			ref_code = config.REF_CODE
 			app_params = {
 				'peer': self.bot_peer,
 				'app': InputBotAppShortName(bot_id=self.bot_peer, short_name='game'),
