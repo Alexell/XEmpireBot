@@ -7,3 +7,4 @@ Pyrogram==2.0.106
 TgCrypto==1.2.5
 tzdata==2024.1
 fake-useragent==1.5.1
+requests==2.28.1
